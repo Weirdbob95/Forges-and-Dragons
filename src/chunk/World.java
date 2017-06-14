@@ -32,7 +32,7 @@ public class World extends Behavior {
         threadPool = new ThreadPoolExecutor(NUM_THREADS, NUM_THREADS, 60, TimeUnit.SECONDS, new LinkedBlockingQueue());
         threadPool.allowCoreThreadTimeOut(true);
         if (Chunk.shaderProgram == null) {
-            Chunk.shaderProgram = new ShaderProgram(Resources.getResource("src/glsl/chunk.vert"), Resources.getResource("src/glsl/chunk.frag"));
+            Chunk.shaderProgram = new ShaderProgram(Resources.loadFileAsString("src/glsl/chunk.vert"), Resources.loadFileAsString("src/glsl/chunk.frag"));
         }
 
         for (int z = (int) -MAX_Z; z < MAX_Z; z++) {
