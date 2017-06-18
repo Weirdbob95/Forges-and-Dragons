@@ -16,6 +16,7 @@ import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 public class Texture implements Activatable {
 
     private int texture;
+    int texNum;
     private int type;
 
     public Texture(int type) {
@@ -28,6 +29,12 @@ public class Texture implements Activatable {
         deactivate();
     }
 
+    public Texture(int texNum, int type) {
+        texture = glGenTextures();
+        this.texNum = texNum;
+        this.type = type;
+    }
+
     public Texture(String fileName) {
         texture = loadTexture(fileName);
         type = GL_TEXTURE_2D;
@@ -35,7 +42,7 @@ public class Texture implements Activatable {
 
     @Override
     public void activate() {
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE0 + texNum);
         glBindTexture(type, texture);
     }
 

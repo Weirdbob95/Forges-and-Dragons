@@ -1,14 +1,15 @@
 package engine;
 
+import static engine.Core.MAIN_THREAD;
+import static engine.Core.onMainThread;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public abstract class Behavior {
 
-    private static final Map<Class<? extends Behavior>, Collection<Behavior>> allBehaviors = new HashMap();
+    private static final Collection<Behavior> ALL_BEHAVIORS = new LinkedList();
 
     private static Behavior currentRoot;
     private final Behavior root;
@@ -31,29 +32,34 @@ public abstract class Behavior {
 
     // Utility functions
     public final Behavior create() {
+        if (Thread.currentThread() != MAIN_THREAD) {
+            onMainThread(() -> create());
+            return this;
+        }
         if (!isRoot()) {
             throw new RuntimeException("Can only create root behaviors");
         }
         for (Behavior b : subBehaviors.values()) {
-            allBehaviors.putIfAbsent(b.getClass(), new LinkedList());
-            allBehaviors.get(b.getClass()).add(b);
+            ALL_BEHAVIORS.add(b);
             b.createInner();
         }
-        allBehaviors.putIfAbsent(getClass(), new LinkedList());
-        allBehaviors.get(getClass()).add(this);
+        ALL_BEHAVIORS.add(this);
         createInner();
         return this;
     }
 
     public final void destroy() {
+        if (Thread.currentThread() != MAIN_THREAD) {
+            onMainThread(() -> destroy());
+        }
         if (!isRoot()) {
             throw new RuntimeException("Can only destroy root behaviors");
         }
         for (Behavior b : subBehaviors.values()) {
-            allBehaviors.get(b.getClass()).remove(b);
+            ALL_BEHAVIORS.remove(b);
             b.destroyInner();
         }
-        allBehaviors.get(getClass()).remove(this);
+        ALL_BEHAVIORS.remove(this);
         destroyInner();
     }
 
@@ -66,14 +72,13 @@ public abstract class Behavior {
     }
 
     public static Collection<Behavior> getAll() {
-        return new LinkedList<>(allBehaviors.values().stream().flatMap(c -> c.stream()).collect(Collectors.toList()));
+        return new LinkedList<>(ALL_BEHAVIORS);
     }
 
-    public static <T extends Behavior> Collection<T> getAll(Class<T> c) {
-        allBehaviors.putIfAbsent(c, new LinkedList());
-        return new LinkedList(allBehaviors.get(c));
-    }
-
+//    public static <T extends Behavior> Collection<T> getAll(Class<T> c) {
+//        ALL_BEHAVIORS.putIfAbsent(c, new LinkedList());
+//        return new LinkedList(ALL_BEHAVIORS.get(c));
+//    }
     public final boolean isRoot() {
         return this == root;
     }

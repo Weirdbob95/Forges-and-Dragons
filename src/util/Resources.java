@@ -3,6 +3,7 @@ package util;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import opengl.ShaderProgram;
 
 public class Resources {
 
@@ -12,5 +13,9 @@ public class Resources {
         } catch (IOException ex) {
             throw new RuntimeException("File not found: " + path);
         }
+    }
+
+    public static ShaderProgram loadShaderProgram(String name) {
+        return new ShaderProgram(Resources.loadFileAsString("src/glsl/" + name + ".vert"), Resources.loadFileAsString("src/glsl/" + name + ".frag"));
     }
 }

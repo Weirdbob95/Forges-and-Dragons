@@ -1,17 +1,40 @@
 package engine;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.LinkedList;
 import opengl.Window;
 
 public abstract class Core {
 
+    public static Thread MAIN_THREAD;
+
     private static long prevTime;
+    private static final Collection<Runnable> TO_RUN = new LinkedList();
     private static boolean shouldClose;
+
+    private static Collection<Runnable> clearToRun() {
+        synchronized (TO_RUN) {
+            Collection<Runnable> r = new LinkedList<>(TO_RUN);
+            TO_RUN.clear();
+            return r;
+        }
+    }
 
     public static void init() {
         System.setProperty("org.lwjgl.librarypath", new File("native").getAbsolutePath());
+        MAIN_THREAD = Thread.currentThread();
         Window.initGLFW();
         Input.init();
+    }
+
+    public static void onMainThread(Runnable toRun) {
+        if (toRun == null) {
+            throw new RuntimeException("toRun cannot be null");
+        }
+        synchronized (TO_RUN) {
+            TO_RUN.add(toRun);
+        }
     }
 
     public static void run() {
@@ -22,7 +45,8 @@ public abstract class Core {
             long time = System.nanoTime();
             double dt = (time - prevTime) / 1e9;
             prevTime = time;
-
+            
+            clearToRun().forEach(r -> r.run());
             Behavior.getAll().forEach(b -> b.update(dt));
             Behavior.getAll().forEach(b -> b.render());
         }

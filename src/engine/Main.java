@@ -8,8 +8,6 @@ import chunk.SimplexNoiseChunkSupplier;
 import chunk.World;
 import opengl.Camera;
 import static opengl.Camera.camera;
-import static opengl.Window.HEIGHT;
-import static opengl.Window.WIDTH;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import static org.lwjgl.glfw.GLFW.*;
@@ -33,13 +31,13 @@ public abstract class Main {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             if (Chunk.shaderProgram != null) {
-                Chunk.shaderProgram.setUniform("projectionMatrix", Camera.getProjectionMatrix(Math.PI / 2, WIDTH, HEIGHT, .1f, 1000));
+                Chunk.shaderProgram.setUniform("projectionMatrix", Camera.getProjectionMatrix());
             }
         });
 
         new FPSBehavior().create();
 
-        new World(new SimplexNoiseChunkSupplier(Math.random())).create();
+        new World(new SimplexNoiseChunkSupplier(0)).create();
 
         Core.run();
     }

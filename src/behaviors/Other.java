@@ -8,16 +8,15 @@ import opengl.Window;
 
 public abstract class Other {
 
-    public static Behavior onMainThread(Runnable toRun) {
-        return new Behavior() {
-            @Override
-            public void update(double dt) {
-                toRun.run();
-                destroy();
-            }
-        }.create();
-    }
-
+//    public static Behavior onMainThread(Runnable toRun) {
+//        return new Behavior() {
+//            @Override
+//            public void update(double dt) {
+//                toRun.run();
+//                destroy();
+//            }
+//        }.create();
+//    }
     public static Behavior onRender(Runnable toRun) {
         return new Behavior() {
             @Override

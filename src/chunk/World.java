@@ -1,9 +1,9 @@
 package chunk;
 
-import static behaviors.Other.onMainThread;
 import static chunk.Chunk.ALL_DIRS;
 import static chunk.SimplexNoiseChunkSupplier.MAX_Z;
 import engine.Behavior;
+import static engine.Core.onMainThread;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -20,7 +20,7 @@ public class World extends Behavior {
     public static final int LOAD_DISTANCE = 8;
     public static final int UNLOAD_DISTANCE = 30;
 
-    private static final int NUM_THREADS = 6;
+    private static final int NUM_THREADS = 2;
 
     private final ChunkSupplier supplier;
     private final Map<Vector3i, Chunk> chunks = new HashMap();

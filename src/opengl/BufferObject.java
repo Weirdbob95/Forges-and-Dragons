@@ -5,7 +5,7 @@ import static org.lwjgl.opengl.GL15.*;
 
 public class BufferObject implements Activatable {
 
-    private final int bufferObject;
+    public final int bufferObject;
     private final int type;
 
     public BufferObject(int type, float[] data) {
