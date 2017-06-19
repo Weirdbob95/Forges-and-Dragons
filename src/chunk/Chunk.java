@@ -44,16 +44,42 @@ public class Chunk extends Behavior {
                             s.colorTexture[i][j] = a.getColorArray(orderComponents(v, dir, q.x + i, q.y + j));
                         }
                     }
+                    for (int i = 0; i < q.w + 1; i++) {
+                        for (int j = 0; j < q.h + 1; j++) {
+                            boolean[][] blocks = new boolean[2][2];
+                            for (int i2 = 0; i2 < 2; i2++) {
+                                for (int j2 = 0; j2 < 2; j2++) {
+                                    blocks[i2][j2] = a.isSolid(orderComponents(v + dirPosNeg(dir), dir, q.x + i + i2 - 1, q.y + j + j2 - 1));
+                                }
+                            }
+                            s.shadeTexture[i][j] = getAmbientOcculusion(blocks);
+                        }
+                    }
                 }
             }
             sg.generateData();
         }
     }
 
-    @Override
-    public void update(double dt) {
-        if (posToChunk(Camera.camera.position).distance(pos) > World.UNLOAD_DISTANCE) {
-
+    private static float getAmbientOcculusion(boolean[][] a) {
+        if ((a[0][0] && a[1][1]) || (a[0][1] && a[1][0])) {
+            return .5f;
+        }
+        int numSolid = 0;
+        for (int i2 = 0; i2 < 2; i2++) {
+            for (int j2 = 0; j2 < 2; j2++) {
+                if (a[i2][j2]) {
+                    numSolid++;
+                }
+            }
+        }
+        switch (numSolid) {
+            case 2:
+                return .7f;
+            case 1:
+                return .8f;
+            default:
+                return 1;
         }
     }
 
@@ -67,6 +93,13 @@ public class Chunk extends Behavior {
             if (toVec3d(pos).add(new Vector3d(.5)).sub(dir.mul(.5)).mul(SIDE_LENGTH).sub(Camera.camera.position).dot(dir) < 0) {
                 surfaceGroups.get(i).render();
             }
+        }
+    }
+
+    @Override
+    public void update(double dt) {
+        if (posToChunk(Camera.camera.position).distance(pos) > World.UNLOAD_DISTANCE) {
+
         }
     }
 }

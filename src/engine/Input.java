@@ -12,7 +12,9 @@ public abstract class Input {
             mouse = new Vector2d(xpos, ypos);
         });
         Window.window.setKeyCallback((window, key, scancode, action, mods) -> {
-            keys.set(key, action != GLFW_RELEASE);
+            if (key >= 0) {
+                keys.set(key, action != GLFW_RELEASE);
+            }
         });
         Window.window.setMouseButtonCallback((window, button, action, mods) -> {
             buttons.set(button, action != GLFW_RELEASE);

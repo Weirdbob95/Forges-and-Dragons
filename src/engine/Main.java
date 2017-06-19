@@ -31,9 +31,6 @@ public abstract class Main {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             SurfaceGroup.shader.setUniform("projectionMatrix", Camera.getProjectionMatrix());
-//            if (Chunk.shaderProgram != null) {
-//                Chunk.shaderProgram.setUniform("projectionMatrix", Camera.getProjectionMatrix());
-//            }
         });
 
         new FPSBehavior().create();
