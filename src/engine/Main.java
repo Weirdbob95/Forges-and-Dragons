@@ -3,11 +3,11 @@ package engine;
 import behaviors.Other.FPSBehavior;
 import static behaviors.Other.onRender;
 import static behaviors.Other.onUpdate;
-import chunk.Chunk;
 import chunk.SimplexNoiseChunkSupplier;
 import chunk.World;
-import opengl.Camera;
-import static opengl.Camera.camera;
+import graphics.Camera;
+import static graphics.Camera.camera;
+import graphics.SurfaceGroup;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import static org.lwjgl.glfw.GLFW.*;
@@ -30,14 +30,15 @@ public abstract class Main {
             glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            if (Chunk.shaderProgram != null) {
-                Chunk.shaderProgram.setUniform("projectionMatrix", Camera.getProjectionMatrix());
-            }
+            SurfaceGroup.shader.setUniform("projectionMatrix", Camera.getProjectionMatrix());
+//            if (Chunk.shaderProgram != null) {
+//                Chunk.shaderProgram.setUniform("projectionMatrix", Camera.getProjectionMatrix());
+//            }
         });
 
         new FPSBehavior().create();
 
-        new World(new SimplexNoiseChunkSupplier(0)).create();
+        new World(new SimplexNoiseChunkSupplier(Math.random() * 1000)).create();
 
         Core.run();
     }

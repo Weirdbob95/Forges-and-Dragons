@@ -4,7 +4,7 @@ import engine.Activatable;
 import engine.Behavior;
 import java.util.Arrays;
 import opengl.BufferObject;
-import opengl.Camera;
+import graphics.Camera;
 import opengl.ShaderProgram;
 import opengl.VertexArrayObject;
 import org.joml.Vector3d;

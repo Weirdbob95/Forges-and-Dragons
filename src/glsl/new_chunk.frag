@@ -13,7 +13,7 @@ uniform samplerBuffer colors;
 uniform samplerBuffer shadeIndices;
 uniform samplerBuffer shades;
 
-const int SIDE_LENGTH = 32;
+const int SIDE_LENGTH = 128;
 
 void main() {
     int id = int(surfaceID);

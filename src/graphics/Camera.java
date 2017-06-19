@@ -1,5 +1,6 @@
-package opengl;
+package graphics;
 
+import opengl.Window;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 
