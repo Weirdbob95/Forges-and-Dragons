@@ -1,49 +1,46 @@
 package chunk;
 
 import static chunk.Chunk.SIDE_LENGTH_2;
-import org.joml.Vector3i;
 
-public class BlockArray {
+public class BlockArray implements BlockStorage {
 
-    private final int[] array = new int[SIDE_LENGTH_2 * SIDE_LENGTH_2 * SIDE_LENGTH_2];
+    private final int size;
+    private final int[] array;
 
-    public int getColor(int x, int y, int z) {
-        return array[(x + 1) * SIDE_LENGTH_2 * SIDE_LENGTH_2 + (y + 1) * SIDE_LENGTH_2 + (z + 1)];
+    public BlockArray() {
+        this(SIDE_LENGTH_2);
     }
 
-    public int getColor(Vector3i pos) {
-        return getColor(pos.x, pos.y, pos.z);
+    public BlockArray(int size) {
+        this.size = size;
+        array = new int[size * size * size];
     }
 
-    public float[] getColorArray(int x, int y, int z) {
-        int col = getColor(x, y, z);
-        float[] r = new float[3];
-        for (int j = 2; j >= 0; j--) {
-            r[j] = (col % 256) / 255.0f;
-            col /= 256;
+    public BlockArray downsample2() {
+        int newSize = size / 2 + 1;
+        BlockArray r = new BlockArray(newSize);
+        for (int x = 0; x < newSize; x++) {
+            for (int y = 0; y < newSize; y++) {
+                for (int z = 0; z < newSize; z++) {
+                    r.set(x - 1, y - 1, z - 1, get(2 * x - 1, 2 * y - 1, 2 * z - 1));
+                }
+            }
         }
         return r;
     }
 
-    public float[] getColorArray(Vector3i pos) {
-        return getColorArray(pos.x, pos.y, pos.z);
+    @Override
+    public int get(int x, int y, int z) {
+        return array[(x + 1) * size * size + (y + 1) * size + (z + 1)];
     }
 
-    public boolean isSolid(int x, int y, int z) {
-        return getColor(x, y, z) != 0;
-    }
-
-    public boolean isSolid(Vector3i pos) {
-        return getColor(pos) != 0;
-    }
-
-    public void setColor(int x, int y, int z, int color) {
-        array[(x + 1) * SIDE_LENGTH_2 * SIDE_LENGTH_2 + (y + 1) * SIDE_LENGTH_2 + (z + 1)] = color;
+    public void set(int x, int y, int z, int color) {
+        array[(x + 1) * size * size + (y + 1) * size + (z + 1)] = color;
     }
 
     public boolean willDraw(int x, int y, int z) {
-        return isSolid(x, y, z) != isSolid(x - 1, y, z) || isSolid(x, y, z) != isSolid(x + 1, y, z)
-                || isSolid(x, y, z) != isSolid(x, y - 1, z) || isSolid(x, y, z) != isSolid(x, y + 1, z)
-                || isSolid(x, y, z) != isSolid(x, y, z - 1) || isSolid(x, y, z) != isSolid(x, y, z + 1);
+        return solid(x, y, z) != solid(x - 1, y, z) || solid(x, y, z) != solid(x + 1, y, z)
+                || solid(x, y, z) != solid(x, y - 1, z) || solid(x, y, z) != solid(x, y + 1, z)
+                || solid(x, y, z) != solid(x, y, z - 1) || solid(x, y, z) != solid(x, y, z + 1);
     }
 }

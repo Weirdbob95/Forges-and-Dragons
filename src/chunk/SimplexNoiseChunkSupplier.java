@@ -50,7 +50,7 @@ public class SimplexNoiseChunkSupplier implements ChunkSupplier {
                         int g = validateColor(150 + 100 * sample(green, i, j, k, colorDownsampling));
                         int b = validateColor(100 * sample(blue, i, j, k, colorDownsampling));
 
-                        ba.setColor(i, j, k, 0x10000 * r + 0x100 * g + b);
+                        ba.set(i, j, k, 0x10000 * r + 0x100 * g + b);
                         count++;
                     }
                 }

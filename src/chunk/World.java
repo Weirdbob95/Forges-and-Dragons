@@ -13,10 +13,11 @@ import org.joml.Vector3d;
 import org.joml.Vector3i;
 import util.Resources;
 import static util.VectorUtils.ALL_DIRS;
+import static util.VectorUtils.toVec3d;
 
 public class World extends Behavior {
 
-    public static final int LOAD_DISTANCE = 8;
+    public static final int LOAD_DISTANCE = 4;
     public static final int UNLOAD_DISTANCE = 30;
 
     private static final int NUM_THREADS = 6;
@@ -77,13 +78,17 @@ public class World extends Behavior {
             loadChunk(posToChunk(Camera.camera.position));
         }
         loadNext.stream()
-                .min(Comparator.comparingDouble(v -> v.distance(posToChunk(Camera.camera.position))))
-                .filter(v -> v.distance(posToChunk(Camera.camera.position)) < LOAD_DISTANCE)
+                .min(Comparator.comparingDouble(v -> chunkToCenterPos(v).distance(Camera.camera.position)))
+                .filter(v -> chunkToCenterPos(v).distance(Camera.camera.position) < Chunk.SIDE_LENGTH * LOAD_DISTANCE)
                 .ifPresent(this::loadChunk);
     }
 
+    public static Vector3d chunkToCenterPos(Vector3i pos) {
+        return toVec3d(pos).add(new Vector3d(.5)).mul(Chunk.SIDE_LENGTH);
+    }
+
     public static Vector3d chunkToPos(Vector3i pos) {
-        return new Vector3d(pos.x, pos.y, pos.z).mul(Chunk.SIDE_LENGTH);
+        return toVec3d(pos).mul(Chunk.SIDE_LENGTH);
     }
 
     public static Vector3i posToChunk(Vector3d pos) {

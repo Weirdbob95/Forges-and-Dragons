@@ -8,7 +8,7 @@ public class FlatChunkSupplier implements ChunkSupplier {
     public FlatChunkSupplier(int height, int color) {
         for (int i = 0; i < Chunk.SIDE_LENGTH; ++i) {
             for (int j = 0; j < Chunk.SIDE_LENGTH; ++j) {
-                flatChunk.setColor(i, height, j, color);
+                flatChunk.set(i, height, j, color);
             }
         }
     }

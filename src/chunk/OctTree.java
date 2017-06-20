@@ -1,10 +1,12 @@
 package chunk;
 
 import static chunk.Chunk.SIDE_LENGTH;
+import java.util.stream.Stream;
 
-public class OctTree {
+public class OctTree implements BlockStorage {
 
     public int value = 0xFFFFFF;
+    public double density;
     public OctTree[] children;
     public int size;
 
@@ -23,7 +25,8 @@ public class OctTree {
             }
         }
         if (!willDraw || size == 1) {
-            value = v.getColor(i * size, j * size, k * size);
+            value = v.get(i * size, j * size, k * size);
+            density = value == 0 ? 0 : 1;
         } else {
             children = new OctTree[8];
             children[0] = new OctTree(v, i * 2, j * 2, k * 2, size / 2);
@@ -34,11 +37,31 @@ public class OctTree {
             children[5] = new OctTree(v, i * 2 + 1, j * 2, k * 2 + 1, size / 2);
             children[6] = new OctTree(v, i * 2, j * 2 + 1, k * 2 + 1, size / 2);
             children[7] = new OctTree(v, i * 2 + 1, j * 2 + 1, k * 2 + 1, size / 2);
+            value = Stream.of(children).mapToInt(o -> o.value).filter(x -> x != 0).findFirst().getAsInt();
+            density = Stream.of(children).mapToDouble(o -> o.density).average().getAsDouble();
         }
     }
 
+    @Override
     public int get(int x, int y, int z) {
         if (children == null) {
+            return value;
+        }
+        int child = 0;
+        if (x >= size / 2) {
+            child += 1;
+        }
+        if (y >= size / 2) {
+            child += 2;
+        }
+        if (z >= size / 2) {
+            child += 4;
+        }
+        return children[child].get(x % (size / 2), y % (size / 2), z % (size / 2));
+    }
+
+    public int getLOD(int x, int y, int z, int lod) {
+        if (children == null || size <= lod) {
             return value;
         }
         int child = 0;

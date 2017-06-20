@@ -33,7 +33,7 @@ public class Chunk extends Behavior {
                 boolean[][] toDraw = new boolean[SIDE_LENGTH][SIDE_LENGTH];
                 for (int i = 0; i < SIDE_LENGTH; i++) {
                     for (int j = 0; j < SIDE_LENGTH; j++) {
-                        toDraw[i][j] = a.isSolid(orderComponents(v, dir, i, j)) && !a.isSolid(orderComponents(v + dirPosNeg(dir), dir, i, j));
+                        toDraw[i][j] = a.solid(orderComponents(v, dir, i, j)) && !a.solid(orderComponents(v + dirPosNeg(dir), dir, i, j));
                     }
                 }
                 for (Quad q : Mesher.mesh(toDraw)) {
@@ -49,7 +49,7 @@ public class Chunk extends Behavior {
                             boolean[][] blocks = new boolean[2][2];
                             for (int i2 = 0; i2 < 2; i2++) {
                                 for (int j2 = 0; j2 < 2; j2++) {
-                                    blocks[i2][j2] = a.isSolid(orderComponents(v + dirPosNeg(dir), dir, q.x + i + i2 - 1, q.y + j + j2 - 1));
+                                    blocks[i2][j2] = a.solid(orderComponents(v + dirPosNeg(dir), dir, q.x + i + i2 - 1, q.y + j + j2 - 1));
                                 }
                             }
                             s.shadeTexture[i][j] = getAmbientOcculusion(blocks);
@@ -62,8 +62,11 @@ public class Chunk extends Behavior {
     }
 
     private static float getAmbientOcculusion(boolean[][] a) {
+//        if (a[0][0] || a[1][0] || a[0][1] || a[1][1]) {
+//            return .75f;
+//        }
         if ((a[0][0] && a[1][1]) || (a[0][1] && a[1][0])) {
-            return .5f;
+            return .55f;
         }
         int numSolid = 0;
         for (int i2 = 0; i2 < 2; i2++) {
@@ -77,7 +80,7 @@ public class Chunk extends Behavior {
             case 2:
                 return .7f;
             case 1:
-                return .8f;
+                return .85f;
             default:
                 return 1;
         }

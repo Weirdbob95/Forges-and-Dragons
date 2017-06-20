@@ -62,13 +62,13 @@ public abstract class Main {
         if (Input.keyDown(GLFW_KEY_W)) {
             Vector3dc forward = camera.facing();
             Vector3d horizontalForward = forward.mul(cameraSpeed, new Vector3d());
-            horizontalForward.z = 0;
+//            horizontalForward.z = 0;
             camera.position.add(horizontalForward);
         }
         if (Input.keyDown(GLFW_KEY_S)) {
             Vector3dc forward = camera.facing();
             Vector3d horizontalForward = forward.mul(-cameraSpeed, new Vector3d());
-            horizontalForward.z = 0;
+//            horizontalForward.z = 0;
             camera.position.add(horizontalForward);
         }
         if (Input.keyDown(GLFW_KEY_A)) {

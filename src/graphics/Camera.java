@@ -37,6 +37,6 @@ public class Camera {
     }
 
     public Vector3d facing() {
-        return new Vector3d(Math.cos(vertAngle) * Math.cos(horAngle), Math.cos(vertAngle) * Math.sin(horAngle), Math.sin(vertAngle));
+        return new Vector3d(Math.cos(vertAngle) * Math.cos(horAngle), Math.cos(vertAngle) * Math.sin(horAngle), -Math.sin(vertAngle));
     }
 }

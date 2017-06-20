@@ -35,7 +35,7 @@ void main() {
     float s2 = texelFetch(shades, shadeIndex + int(texPos.x + 1) + int(size.x + 1) * int(texPos.y)).r;
     float s3 = texelFetch(shades, shadeIndex + int(texPos.x) + int(size.x + 1) * int(texPos.y + 1)).r;
     float s4 = texelFetch(shades, shadeIndex + int(texPos.x + 1) + int(size.x + 1) * int(texPos.y + 1)).r;
-    vec2 t = texPos - floor(texPos);
+    vec2 t = smoothstep(0, 1, fract(texPos)); // fract(texPos); //
     float s = mix(mix(s1, s2, t.x), mix(s3, s4, t.x), t.y);
 
     float shade = 1 + (dot(normal, vec3(.1, .3, 1)) - 1) / 5;
