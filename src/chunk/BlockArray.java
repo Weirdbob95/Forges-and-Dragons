@@ -1,6 +1,8 @@
 package chunk;
 
 import static chunk.Chunk.SIDE_LENGTH_2;
+import java.util.stream.IntStream;
+import static util.MathUtils.clamp;
 
 public class BlockArray implements BlockStorage {
 
@@ -22,7 +24,19 @@ public class BlockArray implements BlockStorage {
         for (int x = 0; x < newSize; x++) {
             for (int y = 0; y < newSize; y++) {
                 for (int z = 0; z < newSize; z++) {
-                    r.set(x - 1, y - 1, z - 1, get(2 * x - 1, 2 * y - 1, 2 * z - 1));
+                    int[] blocks = new int[8];
+                    for (int c = 0; c < 8; c++) {
+                        blocks[c] = get(2 * (x - 1) + c % 2, 2 * (y - 1) + c / 2 % 2, 2 * (z - 1) + c / 4);
+                    }
+                    if (x == 0 || y == 0 || z == 0 || x == newSize - 1 || y == newSize - 1 || z == newSize - 1) {
+                        if (IntStream.of(blocks).allMatch(i -> i != 0)) {
+                            r.set(x - 1, y - 1, z - 1, IntStream.of(blocks).filter(i -> i != 0).findFirst().getAsInt());
+                        }
+                    } else {
+                        if (IntStream.of(blocks).anyMatch(i -> i != 0)) {
+                            r.set(x - 1, y - 1, z - 1, IntStream.of(blocks).filter(i -> i != 0).findFirst().getAsInt());
+                        }
+                    }
                 }
             }
         }
@@ -31,6 +45,9 @@ public class BlockArray implements BlockStorage {
 
     @Override
     public int get(int x, int y, int z) {
+        x = clamp(x, -1, size - 2);
+        y = clamp(y, -1, size - 2);
+        z = clamp(z, -1, size - 2);
         return array[(x + 1) * size * size + (y + 1) * size + (z + 1)];
     }
 

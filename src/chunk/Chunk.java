@@ -8,9 +8,10 @@ import graphics.SurfaceGroup;
 import graphics.SurfaceGroup.Surface;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Stream;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
-import static util.VectorUtils.*;
+import static util.MathUtils.*;
 
 public class Chunk extends Behavior {
 
@@ -20,44 +21,55 @@ public class Chunk extends Behavior {
     public Vector3i pos;
     public OctTree colors;
 
-    private List<SurfaceGroup> surfaceGroups = new LinkedList();
+    private List<List<SurfaceGroup>> levelsOfDetail = new LinkedList();
 
     public void generate(BlockArray a) {
         colors = new OctTree(a);
 
-        for (Vector3i dir : ALL_DIRS) {
-            SurfaceGroup sg = new SurfaceGroup();
-            surfaceGroups.add(sg);
-            sg.normal = dir;
-            for (int v = 0; v < SIDE_LENGTH; v++) {
-                boolean[][] toDraw = new boolean[SIDE_LENGTH][SIDE_LENGTH];
-                for (int i = 0; i < SIDE_LENGTH; i++) {
-                    for (int j = 0; j < SIDE_LENGTH; j++) {
-                        toDraw[i][j] = a.solid(orderComponents(v, dir, i, j)) && !a.solid(orderComponents(v + dirPosNeg(dir), dir, i, j));
-                    }
-                }
-                for (Quad q : Mesher.mesh(toDraw)) {
-                    Surface s = q.createSurface(v, dir);
-                    sg.surfaces.add(s);
-                    for (int i = 0; i < q.w; i++) {
-                        for (int j = 0; j < q.h; j++) {
-                            s.colorTexture[i][j] = a.getColorArray(orderComponents(v, dir, q.x + i, q.y + j));
-                        }
-                    }
-                    for (int i = 0; i < q.w + 1; i++) {
-                        for (int j = 0; j < q.h + 1; j++) {
-                            boolean[][] blocks = new boolean[2][2];
-                            for (int i2 = 0; i2 < 2; i2++) {
-                                for (int j2 = 0; j2 < 2; j2++) {
-                                    blocks[i2][j2] = a.solid(orderComponents(v + dirPosNeg(dir), dir, q.x + i + i2 - 1, q.y + j + j2 - 1));
-                                }
-                            }
-                            s.shadeTexture[i][j] = getAmbientOcculusion(blocks);
-                        }
-                    }
-                }
+        for (int lod = 1; lod <= SIDE_LENGTH; lod *= 2) {
+            if (lod > 1) {
+                a = a.downsample2();
             }
-            sg.generateData();
+            int size = SIDE_LENGTH / lod;
+
+            List<SurfaceGroup> surfaceGroups = new LinkedList();
+            levelsOfDetail.add(surfaceGroups);
+            for (Vector3i dir : ALL_DIRS) {
+                SurfaceGroup sg = new SurfaceGroup();
+                surfaceGroups.add(sg);
+                sg.normal = dir;
+                for (int v = 0; v < size; v++) {
+                    boolean[][] toDraw = new boolean[size][size];
+                    for (int i = 0; i < size; i++) {
+                        for (int j = 0; j < size; j++) {
+                            toDraw[i][j] = a.solid(orderComponents(v, dir, i, j)) && !a.solid(orderComponents(v + dirPosNeg(dir), dir, i, j));
+                        }
+                    }
+                    for (Quad q : Mesher.mesh(toDraw)) {
+                        Surface s = q.createSurface(v, dir);
+                        int lod2 = lod;
+                        Stream.of(s.corners).forEach(c -> c.mul(lod2));
+                        sg.surfaces.add(s);
+                        for (int i = 0; i < q.w; i++) {
+                            for (int j = 0; j < q.h; j++) {
+                                s.colorTexture[i][j] = a.getColorArray(orderComponents(v, dir, q.x + i, q.y + j));
+                            }
+                        }
+                        for (int i = 0; i < q.w + 1; i++) {
+                            for (int j = 0; j < q.h + 1; j++) {
+                                boolean[][] blocks = new boolean[2][2];
+                                for (int i2 = 0; i2 < 2; i2++) {
+                                    for (int j2 = 0; j2 < 2; j2++) {
+                                        blocks[i2][j2] = a.solid(orderComponents(v + dirPosNeg(dir), dir, q.x + i + i2 - 1, q.y + j + j2 - 1));
+                                    }
+                                }
+                                s.shadeTexture[i][j] = getAmbientOcculusion(blocks);
+                            }
+                        }
+                    }
+                }
+                sg.generateData();
+            }
         }
     }
 
@@ -89,6 +101,12 @@ public class Chunk extends Behavior {
     @Override
     public void render() {
         SurfaceGroup.shader.setUniform("worldMatrix", Camera.camera.getWorldMatrix(toVec3d(pos).mul(SIDE_LENGTH)));
+
+        double dist = World.chunkToCenterPos(pos).sub(Camera.camera.position).length();
+        int lodVal = Math.min((int) dist / 500, levelsOfDetail.size() - 1);
+
+        SurfaceGroup.shader.setUniform("lod", 1 << lodVal);
+        List<SurfaceGroup> surfaceGroups = levelsOfDetail.get(lodVal);
 
         for (int i = 0; i < 6; i++) {
             surfaceGroups.get(i).init();

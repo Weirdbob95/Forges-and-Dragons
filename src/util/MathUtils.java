@@ -5,12 +5,20 @@ import java.util.List;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
-public class VectorUtils {
+public class MathUtils {
 
     public static final List<Vector3i> ALL_DIRS = Arrays.asList(
             new Vector3i(-1, 0, 0), new Vector3i(1, 0, 0),
             new Vector3i(0, -1, 0), new Vector3i(0, 1, 0),
             new Vector3i(0, 0, -1), new Vector3i(0, 0, 1));
+
+    public static double clamp(double x, double lower, double upper) {
+        return Math.max(lower, Math.min(x, upper));
+    }
+
+    public static int clamp(int x, int lower, int upper) {
+        return Math.max(lower, Math.min(x, upper));
+    }
 
     public static int dirPos(Vector3i dir) {
         return Math.max(dirPosNeg(dir), 0);

@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 import util.Resources;
-import static util.VectorUtils.ALL_DIRS;
-import static util.VectorUtils.toVec3d;
+import static util.MathUtils.ALL_DIRS;
+import static util.MathUtils.toVec3d;
 
 public class World extends Behavior {
 

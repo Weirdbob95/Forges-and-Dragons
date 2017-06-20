@@ -4,8 +4,8 @@ import graphics.SurfaceGroup.Surface;
 import java.util.LinkedList;
 import java.util.List;
 import org.joml.Vector3i;
-import static util.VectorUtils.dirPos;
-import static util.VectorUtils.orderComponents;
+import static util.MathUtils.dirPos;
+import static util.MathUtils.orderComponents;
 
 public abstract class Mesher {
 

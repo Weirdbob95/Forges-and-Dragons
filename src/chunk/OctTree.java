@@ -37,7 +37,7 @@ public class OctTree implements BlockStorage {
             children[5] = new OctTree(v, i * 2 + 1, j * 2, k * 2 + 1, size / 2);
             children[6] = new OctTree(v, i * 2, j * 2 + 1, k * 2 + 1, size / 2);
             children[7] = new OctTree(v, i * 2 + 1, j * 2 + 1, k * 2 + 1, size / 2);
-            value = Stream.of(children).mapToInt(o -> o.value).filter(x -> x != 0).findFirst().getAsInt();
+//            value = Stream.of(children).mapToInt(o -> o.value).filter(x -> x != 0).findFirst().getAsInt();
             density = Stream.of(children).mapToDouble(o -> o.density).average().getAsDouble();
         }
     }
