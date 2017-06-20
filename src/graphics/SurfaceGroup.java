@@ -3,7 +3,7 @@ package graphics;
 import behaviors.Other.FPSBehavior;
 import static behaviors.Other.onRender;
 import static behaviors.Other.onUpdate;
-import chunk.SimplexNoiseChunkSupplier;
+import chunk.ChunkSupplier;
 import chunk.World;
 import static engine.Activatable.using;
 import engine.Core;
@@ -92,7 +92,7 @@ public class SurfaceGroup {
 
         new FPSBehavior().create();
 
-        new World(new SimplexNoiseChunkSupplier(Math.random())).create();
+        new World(new ChunkSupplier(Math.random())).create();
 
         new SimpleRect(new Vector3d(0, 0, -1)).create();
 

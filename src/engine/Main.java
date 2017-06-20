@@ -3,7 +3,7 @@ package engine;
 import behaviors.Other.FPSBehavior;
 import static behaviors.Other.onRender;
 import static behaviors.Other.onUpdate;
-import chunk.SimplexNoiseChunkSupplier;
+import chunk.ChunkSupplier;
 import chunk.World;
 import graphics.Camera;
 import static graphics.Camera.camera;
@@ -35,7 +35,7 @@ public abstract class Main {
 
         new FPSBehavior().create();
 
-        new World(new SimplexNoiseChunkSupplier(Math.random() * 1000)).create();
+        new World(new ChunkSupplier()).create();
 
         Core.run();
     }

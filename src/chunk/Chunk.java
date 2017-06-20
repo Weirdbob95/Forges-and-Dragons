@@ -21,13 +21,15 @@ public class Chunk extends Behavior {
     public Vector3i pos;
     public OctTree colors;
 
+    int minLOD;
     private List<List<SurfaceGroup>> levelsOfDetail = new LinkedList();
 
-    public void generate(BlockArray a) {
-        colors = new OctTree(a);
+    public void generate(BlockArray a, int minLOD) {
+//        colors = new OctTree(a);
+        this.minLOD = minLOD;
 
-        for (int lod = 1; lod <= SIDE_LENGTH; lod *= 2) {
-            if (lod > 1) {
+        for (int lod = 1 << minLOD; lod <= SIDE_LENGTH; lod *= 2) {
+            if (lod > 1 << minLOD) {
                 a = a.downsample2();
             }
             int size = SIDE_LENGTH / lod;
@@ -102,11 +104,9 @@ public class Chunk extends Behavior {
     public void render() {
         SurfaceGroup.shader.setUniform("worldMatrix", Camera.camera.getWorldMatrix(toVec3d(pos).mul(SIDE_LENGTH)));
 
-        double dist = World.chunkToCenterPos(pos).sub(Camera.camera.position).length();
-        int lodVal = Math.min((int) dist / 500, levelsOfDetail.size() - 1);
-
-        SurfaceGroup.shader.setUniform("lod", 1 << lodVal);
-        List<SurfaceGroup> surfaceGroups = levelsOfDetail.get(lodVal);
+        int lod = clamp(World.desiredLOD(pos), minLOD, minLOD + levelsOfDetail.size() - 1);
+        SurfaceGroup.shader.setUniform("lod", 1 << lod);
+        List<SurfaceGroup> surfaceGroups = levelsOfDetail.get(lod - minLOD);
 
         for (int i = 0; i < 6; i++) {
             surfaceGroups.get(i).init();
