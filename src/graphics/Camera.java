@@ -26,7 +26,7 @@ public class Camera {
     }
 
     public static Matrix4d getProjectionMatrix() {
-        return getProjectionMatrix(Math.PI / 2, Window.WIDTH, Window.HEIGHT, .1f, 2000);
+        return getProjectionMatrix(Math.PI / 2, Window.WIDTH, Window.HEIGHT, .2f, 2000);
     }
 
     private static Matrix4d getProjectionMatrix(double fov, double width, double height, double zNear, double zFar) {

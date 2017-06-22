@@ -9,15 +9,15 @@ import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
-import static util.MathUtils.ALL_DIRS;
-import static util.MathUtils.toVec3d;
+import static util.MathUtils.*;
 import util.Resources;
 
 public class World extends Behavior {
 
-    public static final int LOAD_DISTANCE = 16;
+    public static final int LOAD_DISTANCE = 8;
     public static final int UNLOAD_DISTANCE = 30;
 
     private static final int NUM_THREADS = 6;
@@ -53,16 +53,13 @@ public class World extends Behavior {
         Chunk prev = chunks.put(v, null);
 
         threadPool.execute(() -> {
-            int lod = Math.min(desiredLOD(v), 5);
+            int lod = clamp(desiredLOD(v) - 1, 0, 7);
 
             BlockArray blockArray = supplier.getLOD(v.x, v.y, v.z, 1 << lod);
             if (blockArray != null) {
                 Chunk c = new Chunk();
                 c.pos = v;
                 c.generate(blockArray, lod);
-                if (prev != null) {
-                    prev.destroy();
-                }
                 chunks.put(v, c);
                 onMainThread(() -> {
                     c.create();
@@ -74,6 +71,10 @@ public class World extends Behavior {
                     }
                 });
             }
+
+            if (prev != null) {
+                prev.destroy();
+            }
         });
     }
 
@@ -82,19 +83,11 @@ public class World extends Behavior {
         if (!chunks.containsKey(posToChunk(Camera.camera.position))) {
             loadChunk(posToChunk(Camera.camera.position));
         }
-        Optional<Vector3i> o = loadNext.stream()
+        Stream.concat(loadNext.stream(), chunks.keySet().stream())
+                .filter(v -> !chunks.containsKey(v) || (chunks.get(v) != null && desiredLOD(v) < chunks.get(v).minLOD))
                 .min(Comparator.comparingDouble(v -> chunkToCenterPos(v).distance(Camera.camera.position)))
-                .filter(v -> chunkToCenterPos(v).distance(Camera.camera.position) < Chunk.SIDE_LENGTH * LOAD_DISTANCE);
-        if (o.isPresent()) {
-            loadChunk(o.get());
-        } else {
-//            if (threadPool.prestartCoreThread()) {
-            chunks.entrySet().stream()
-                    .filter(e -> e.getValue() != null && desiredLOD(e.getKey()) < e.getValue().minLOD)
-                    .min(Comparator.comparingDouble(e -> chunkToCenterPos(e.getKey()).distance(Camera.camera.position)))
-                    .ifPresent(e -> loadChunk(e.getKey()));
-//            }
-        }
+                .filter(v -> chunkToCenterPos(v).distance(Camera.camera.position) < Chunk.SIDE_LENGTH * LOAD_DISTANCE)
+                .ifPresent(this::loadChunk);
     }
 
     public static Vector3d chunkToCenterPos(Vector3i pos) {
@@ -110,6 +103,6 @@ public class World extends Behavior {
     }
 
     static int desiredLOD(Vector3i pos) {
-        return (int) World.chunkToCenterPos(pos).sub(Camera.camera.position).length() / 250;
+        return (int) World.chunkToCenterPos(pos).sub(Camera.camera.position).length() / 500;
     }
 }

@@ -2,12 +2,13 @@ package chunk;
 
 import static chunk.Chunk.SIDE_LENGTH;
 import static chunk.Chunk.SIDE_LENGTH_2;
+import static util.MathUtils.clamp;
 import util.Noise;
 
 public class ChunkSupplier {
 
     private static final int OCTAVES = 4;
-    private static final double FREQUENCY = 1 / 1000.;
+    private static final double FREQUENCY = 1 / 500.;
     private static final double HEIGHT = 100;
 
     public static final double MAX_Z = 2. * HEIGHT / SIDE_LENGTH;
@@ -66,8 +67,8 @@ public class ChunkSupplier {
             return null;
         }
 
-        int blockDownsampling = 4 * lod;
-        int colorDownsampling = 8 * lod;
+        int blockDownsampling = Math.min(4 * lod, SIDE_LENGTH);
+        int colorDownsampling = Math.min(8 * lod, SIDE_LENGTH);
 
         double[][][] blocks = fbmDownsample(noise, x, y, z, OCTAVES, FREQUENCY, blockDownsampling);
         double[][][] red = fbmDownsample(noise, 1000 + x, y, z, 2, 1 / 1000., colorDownsampling);
@@ -79,13 +80,14 @@ public class ChunkSupplier {
         for (int i = -1; i <= SIDE_LENGTH / lod; i++) {
             for (int j = -1; j <= SIDE_LENGTH / lod; j++) {
                 for (int k = -1; k <= SIDE_LENGTH / lod; k++) {
-                    if (sample(blocks, i, j, k, blockDownsampling / lod) * HEIGHT > z * SIDE_LENGTH + k * lod) {
+                    double cutoffAdd = (lod == 1 || (i >= 0 && j >= 0 && k >= 0 && i < SIDE_LENGTH / lod && j < SIDE_LENGTH / lod && k < SIDE_LENGTH / lod)) ? 0 : lod;
+                    if (sample(blocks, i, j, k, blockDownsampling / lod) * HEIGHT > z * SIDE_LENGTH + k * lod + cutoffAdd) {
                         if (ba == null) {
                             ba = new BlockArray(SIDE_LENGTH / lod + 2);
                         }
 
                         int r = validateColor(100 * sample(red, i, j, k, colorDownsampling / lod));
-                        int g = validateColor(150 + 100 * sample(green, i, j, k, colorDownsampling / lod));
+                        int g = validateColor(150 + 100 * sample(green, i, j, k, colorDownsampling / lod) - (z * SIDE_LENGTH + k * lod) / 1.);
                         int b = validateColor(100 * sample(blue, i, j, k, colorDownsampling / lod));
 
                         ba.set(i, j, k, 0x10000 * r + 0x100 * g + b);
@@ -140,6 +142,6 @@ public class ChunkSupplier {
     }
 
     private static int validateColor(double x) {
-        return (int) Math.min(Math.max(0, x), 255);
+        return clamp((int) x, 0, 255);
     }
 }
