@@ -17,20 +17,30 @@ public abstract class Other {
 //            }
 //        }.create();
 //    }
-    public static Behavior onRender(Runnable toRun) {
+    public static Behavior onRender(double layer, Runnable toRun) {
         return new Behavior() {
             @Override
             public void render() {
                 toRun.run();
             }
+
+            @Override
+            public double renderLayer() {
+                return layer;
+            }
         }.create();
     }
 
-    public static Behavior onUpdate(Consumer<Double> toRun) {
+    public static Behavior onUpdate(double layer, Consumer<Double> toRun) {
         return new Behavior() {
             @Override
             public void update(double dt) {
                 toRun.accept(dt);
+            }
+
+            @Override
+            public double updateLayer() {
+                return layer;
             }
         }.create();
     }

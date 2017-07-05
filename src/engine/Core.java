@@ -43,12 +43,12 @@ public abstract class Core {
             Window.window.nextFrame();
 
             long time = System.nanoTime();
-            double dt = (time - prevTime) / 1e9;
+            double dt = Math.min((time - prevTime) / 1e9, .1);
             prevTime = time;
-            
+
             clearToRun().forEach(r -> r.run());
-            Behavior.getAll().forEach(b -> b.update(dt));
-            Behavior.getAll().forEach(b -> b.render());
+            Behavior.getAllUpdateOrder().forEach(b -> b.update(dt));
+            Behavior.getAllRenderOrder().forEach(b -> b.render());
         }
         Behavior.getAll().stream().filter(b -> b.isRoot()).forEach(b -> b.destroy());
         Window.cleanupGLFW();

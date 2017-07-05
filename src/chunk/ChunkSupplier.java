@@ -87,7 +87,7 @@ public class ChunkSupplier {
                         }
 
                         int r = validateColor(100 * sample(red, i, j, k, colorDownsampling / lod));
-                        int g = validateColor(150 + 100 * sample(green, i, j, k, colorDownsampling / lod) - (z * SIDE_LENGTH + k * lod) / 1.);
+                        int g = validateColor(150 + 100 * sample(green, i, j, k, colorDownsampling / lod));// - (z * SIDE_LENGTH + k * lod) / 1.);
                         int b = validateColor(100 * sample(blue, i, j, k, colorDownsampling / lod));
 
                         ba.set(i, j, k, 0x10000 * r + 0x100 * g + b);

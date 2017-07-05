@@ -2,14 +2,16 @@ package engine;
 
 import static engine.Core.MAIN_THREAD;
 import static engine.Core.onMainThread;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 public abstract class Behavior {
 
-    private static final Collection<Behavior> ALL_BEHAVIORS = new LinkedList();
+    private static final Collection<Behavior> ALL_BEHAVIORS = new HashSet();
+    private static final SortedSet<Behavior> RENDER_ORDER = new TreeSet(Comparator.comparingDouble(Behavior::renderLayer).thenComparingInt(b -> b.id));
+    private static final SortedSet<Behavior> UPDATE_ORDER = new TreeSet(Comparator.comparingDouble(Behavior::updateLayer).thenComparingInt(b -> b.id));
+
+    private static int maxID;
+    private int id = maxID++;
 
     private static Behavior currentRoot;
     private final Behavior root;
@@ -40,27 +42,38 @@ public abstract class Behavior {
             throw new RuntimeException("Can only create root behaviors");
         }
         for (Behavior b : subBehaviors.values()) {
-            ALL_BEHAVIORS.add(b);
-            b.createInner();
+            b.createActual();
         }
-        ALL_BEHAVIORS.add(this);
-        createInner();
+        createActual();
         return this;
+    }
+
+    private void createActual() {
+        ALL_BEHAVIORS.add(this);
+        RENDER_ORDER.add(this);
+        UPDATE_ORDER.add(this);
+        createInner();
     }
 
     public final void destroy() {
         if (Thread.currentThread() != MAIN_THREAD) {
             onMainThread(() -> destroy());
+            return;
         }
         if (!isRoot()) {
             throw new RuntimeException("Can only destroy root behaviors");
         }
         for (Behavior b : subBehaviors.values()) {
-            ALL_BEHAVIORS.remove(b);
-            b.destroyInner();
+            destroyActual();
         }
+        destroyActual();
+    }
+
+    private void destroyActual() {
         ALL_BEHAVIORS.remove(this);
-        destroyInner();
+        RENDER_ORDER.remove(this);
+        UPDATE_ORDER.remove(this);
+        createInner();
     }
 
     public final <T extends Behavior> T get(Class<T> c) {
@@ -75,10 +88,21 @@ public abstract class Behavior {
         return new LinkedList<>(ALL_BEHAVIORS);
     }
 
-//    public static <T extends Behavior> Collection<T> getAll(Class<T> c) {
-//        ALL_BEHAVIORS.putIfAbsent(c, new LinkedList());
-//        return new LinkedList(ALL_BEHAVIORS.get(c));
-//    }
+    public static Collection<Behavior> getAllRenderOrder() {
+        return new LinkedList<>(RENDER_ORDER);
+    }
+
+    public static Collection<Behavior> getAllUpdateOrder() {
+        return new LinkedList<>(UPDATE_ORDER);
+    }
+
+    public final Set<Class<? extends Behavior>> getSubBehaviors() {
+        if (!isRoot()) {
+            throw new RuntimeException("Can only get subbehaviors of root behaviors");
+        }
+        return subBehaviors.keySet();
+    }
+
     public final boolean isRoot() {
         return this == root;
     }
@@ -94,7 +118,10 @@ public abstract class Behavior {
         }
         // Instantiate a new behavior
         try {
-            return c.newInstance();
+            currentRoot = this;
+            T r = c.newInstance();
+            currentRoot = null;
+            return r;
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new RuntimeException("Behavior does not have an empty public constructor: " + c.getSimpleName());
         }
@@ -110,6 +137,14 @@ public abstract class Behavior {
     public void render() {
     }
 
+    public double renderLayer() {
+        return 0;
+    }
+
     public void update(double dt) {
+    }
+
+    public double updateLayer() {
+        return 0;
     }
 }

@@ -2,6 +2,7 @@ package chunk;
 
 import static chunk.Chunk.SIDE_LENGTH;
 import java.util.stream.Stream;
+import org.joml.Vector3d;
 
 public class OctTree implements BlockStorage {
 
@@ -42,6 +43,25 @@ public class OctTree implements BlockStorage {
         }
     }
 
+    public boolean collides(Vector3d min, Vector3d max) {
+        if (density == 0) {
+            return false;
+        }
+        if (density == 1) {
+            return true;
+        }
+        for (int x = Math.max(0, (int) min.x); x < Math.min(size, (int) max.x + 1); x++) {
+            for (int y = Math.max(0, (int) min.y); y < Math.min(size, (int) max.y + 1); y++) {
+                for (int z = Math.max(0, (int) min.z); z < Math.min(size, (int) max.z + 1); z++) {
+                    if (solid(x, y, z)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public int get(int x, int y, int z) {
         if (children == null) {
@@ -60,20 +80,20 @@ public class OctTree implements BlockStorage {
         return children[child].get(x % (size / 2), y % (size / 2), z % (size / 2));
     }
 
-    public int getLOD(int x, int y, int z, int lod) {
-        if (children == null || size <= lod) {
-            return value;
-        }
-        int child = 0;
-        if (x >= size / 2) {
-            child += 1;
-        }
-        if (y >= size / 2) {
-            child += 2;
-        }
-        if (z >= size / 2) {
-            child += 4;
-        }
-        return children[child].get(x % (size / 2), y % (size / 2), z % (size / 2));
-    }
+//    public int getLOD(int x, int y, int z, int lod) {
+//        if (children == null || size <= lod) {
+//            return value;
+//        }
+//        int child = 0;
+//        if (x >= size / 2) {
+//            child += 1;
+//        }
+//        if (y >= size / 2) {
+//            child += 2;
+//        }
+//        if (z >= size / 2) {
+//            child += 4;
+//        }
+//        return children[child].get(x % (size / 2), y % (size / 2), z % (size / 2));
+//    }
 }

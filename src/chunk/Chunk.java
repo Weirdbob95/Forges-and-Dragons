@@ -25,7 +25,7 @@ public class Chunk extends Behavior {
     private List<List<SurfaceGroup>> levelsOfDetail = new LinkedList();
 
     public void generate(BlockArray a, int minLOD) {
-//        colors = new OctTree(a);
+        colors = new OctTree(a);
         this.minLOD = minLOD;
 
         for (int lod = 1 << minLOD; lod <= SIDE_LENGTH; lod *= 2) {
@@ -102,17 +102,19 @@ public class Chunk extends Behavior {
 
     @Override
     public void render() {
-        SurfaceGroup.shader.setUniform("worldMatrix", Camera.camera.getWorldMatrix(toVec3d(pos).mul(SIDE_LENGTH)));
+        if (World.frustumIntersects(pos)) {
+            SurfaceGroup.shader.setUniform("worldMatrix", Camera.camera.getWorldMatrix(toVec3d(pos).mul(SIDE_LENGTH)));
 
-        int lod = clamp(World.desiredLOD(pos), minLOD, minLOD + levelsOfDetail.size() - 1);
-        SurfaceGroup.shader.setUniform("lod", 1 << lod);
-        List<SurfaceGroup> surfaceGroups = levelsOfDetail.get(lod - minLOD);
+            int lod = clamp(World.desiredLOD(pos), minLOD, minLOD + levelsOfDetail.size() - 1);
+            SurfaceGroup.shader.setUniform("lod", 1 << lod);
+            List<SurfaceGroup> surfaceGroups = levelsOfDetail.get(lod - minLOD);
 
-        for (int i = 0; i < 6; i++) {
-            surfaceGroups.get(i).init();
-            Vector3d dir = toVec3d(ALL_DIRS.get(i));
-            if (toVec3d(pos).add(new Vector3d(.5)).sub(dir.mul(.5)).mul(SIDE_LENGTH).sub(Camera.camera.position).dot(dir) < 0) {
-                surfaceGroups.get(i).render();
+            for (int i = 0; i < 6; i++) {
+                surfaceGroups.get(i).init();
+                Vector3d dir = toVec3d(ALL_DIRS.get(i));
+                if (toVec3d(pos).add(new Vector3d(.5)).sub(dir.mul(.5)).mul(SIDE_LENGTH).sub(Camera.camera.position).dot(dir) < 0) {
+                    surfaceGroups.get(i).render();
+                }
             }
         }
     }
