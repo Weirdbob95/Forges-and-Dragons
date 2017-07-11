@@ -23,45 +23,6 @@ public class ChunkSupplier {
         this(Math.random() * 1e6);
     }
 
-    public BlockArray get(int x, int y, int z) {
-        if (z > MAX_Z - 1 || z < -MAX_Z) {
-            return null;
-        }
-
-        int blockDownsampling = 4;
-        int colorDownsampling = 8;
-
-        double[][][] blocks = fbmDownsample(noise, x, y, z, OCTAVES, FREQUENCY, blockDownsampling);
-        double[][][] red = fbmDownsample(noise, 1000 + x, y, z, 2, 1 / 1000., colorDownsampling);
-        double[][][] green = fbmDownsample(noise, 2000 + x, y, z, 2, 1 / 1000., colorDownsampling);
-        double[][][] blue = fbmDownsample(noise, 3000 + x, y, z, 2, 1 / 1000., colorDownsampling);
-
-        BlockArray ba = null;
-        int count = 0;
-        for (int i = -1; i <= SIDE_LENGTH; i++) {
-            for (int j = -1; j <= SIDE_LENGTH; j++) {
-                for (int k = -1; k <= SIDE_LENGTH; k++) {
-                    if (sample(blocks, i, j, k, blockDownsampling) * HEIGHT > z * SIDE_LENGTH + k) {
-                        if (ba == null) {
-                            ba = new BlockArray();
-                        }
-
-                        int r = validateColor(100 * sample(red, i, j, k, colorDownsampling));
-                        int g = validateColor(150 + 100 * sample(green, i, j, k, colorDownsampling));
-                        int b = validateColor(100 * sample(blue, i, j, k, colorDownsampling));
-
-                        ba.set(i, j, k, 0x10000 * r + 0x100 * g + b);
-                        count++;
-                    }
-                }
-            }
-        }
-        if (count == 0 || count == SIDE_LENGTH_2 * SIDE_LENGTH_2 * SIDE_LENGTH_2) {
-            return null;
-        }
-        return ba;
-    }
-
     public BlockArray getLOD(int x, int y, int z, int lod) {
         if (z > MAX_Z - 1 || z < -MAX_Z) {
             return null;
@@ -71,9 +32,9 @@ public class ChunkSupplier {
         int colorDownsampling = Math.min(8 * lod, SIDE_LENGTH);
 
         double[][][] blocks = fbmDownsample(noise, x, y, z, OCTAVES, FREQUENCY, blockDownsampling);
-        double[][][] red = fbmDownsample(noise, 1000 + x, y, z, 2, 1 / 1000., colorDownsampling);
-        double[][][] green = fbmDownsample(noise, 2000 + x, y, z, 2, 1 / 1000., colorDownsampling);
-        double[][][] blue = fbmDownsample(noise, 3000 + x, y, z, 2, 1 / 1000., colorDownsampling);
+        double[][][] red = fbmDownsample(noise, 1000 + x, y, z, 1, 1 / 400., colorDownsampling);
+        //double[][][] green = fbmDownsample(noise, 2000 + x, y, z, 4, 1 / 200., colorDownsampling);
+        //double[][][] blue = fbmDownsample(noise, 3000 + x, y, z, 4, 1 / 200., colorDownsampling);
 
         BlockArray ba = null;
         int count = 0;
@@ -86,9 +47,9 @@ public class ChunkSupplier {
                             ba = new BlockArray(SIDE_LENGTH / lod + 2);
                         }
 
-                        int r = validateColor(100 * sample(red, i, j, k, colorDownsampling / lod));
-                        int g = validateColor(150 + 100 * sample(green, i, j, k, colorDownsampling / lod));// - (z * SIDE_LENGTH + k * lod) / 1.);
-                        int b = validateColor(100 * sample(blue, i, j, k, colorDownsampling / lod));
+                        int r = validateColor(200 * sample(red, i, j, k, colorDownsampling / lod));
+                        int g = validateColor(220 + 30 * sample(red, i, j, k, colorDownsampling / lod));// - (z * SIDE_LENGTH + k * lod) / 1.);
+                        int b = validateColor(-100 * sample(red, i, j, k, colorDownsampling / lod));
 
                         ba.set(i, j, k, 0x10000 * r + 0x100 * g + b);
                         count++;

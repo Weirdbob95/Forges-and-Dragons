@@ -72,8 +72,7 @@ public class World extends Behavior {
             loadNext.remove(v);
             Chunk prev = chunks.get(v);
 
-            System.out.println(chunks.size());
-
+//            System.out.println(chunks.size());
             threadPool.execute(() -> {
                 int lod = clamp(desiredLOD(v) - 1, 0, 6);
 

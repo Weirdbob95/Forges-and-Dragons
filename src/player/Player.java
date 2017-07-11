@@ -53,7 +53,7 @@ public class Player extends Behavior {
         if (Input.keyJustPressed(GLFW_KEY_LEFT_CONTROL)) {
             sprint = !sprint;
         }
-        double speed = sprint ? 30 : 10;
+        double speed = sprint ? 30 : 8;
 
         Vector3d forwards = camera.facing();
         forwards.z = 0;
@@ -81,8 +81,10 @@ public class Player extends Behavior {
         velocity.velocity.lerp(idealVel, 1 - Math.pow(.005, dt));
 
         // Jump
-        if (Input.keyDown(GLFW_KEY_SPACE) && physics.onGround) {
-            velocity.velocity.z = 8;
+        if (Input.keyDown(GLFW_KEY_SPACE)) {
+            if (physics.onGround || sprint) {
+                velocity.velocity.z = speed * 1.5;
+            }
         }
     }
 
