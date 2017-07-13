@@ -23,9 +23,9 @@ public class SurfaceGroup {
     public static ShaderProgram shader;
 
     public Vector3i normal;
-    public List<Surface> surfaces = new LinkedList();
+    public List<Surface> surfaces = new ArrayList();
     private int numSurfaces;
-    private int lod;
+    private final int lod;
 
     public SurfaceGroup(int lod) {
         this.lod = lod;
@@ -40,16 +40,9 @@ public class SurfaceGroup {
 
         Map<Integer, List<Surface>> layers = new HashMap();
         for (Surface s : surfaces) {
-            //int layer = (int) Math.floor(getComponent(s.corners[0], normal, 2) / sg.lod);
             int layer = (int) Math.round((getComponent(s.corners[0], normal, 2) - dirPosNeg(normal) * .01) / sg.lod);
             layers.putIfAbsent(layer, new LinkedList());
             layers.get(layer).add(s);
-//            if (2 * layer > getComponent(s.corners[0], normal, 2) + 1) {
-//                System.out.println("ok");
-//            }
-//            if (2 * layer < getComponent(s.corners[0], normal, 2) - 1) {
-//                System.out.println("ok");
-//            }
         }
 
         layers.forEach((layer, surfaces) -> {
@@ -95,10 +88,7 @@ public class SurfaceGroup {
             // Turn the layer back into a surface list
             for (Quad q : Mesher.mesh(mesh)) {
                 Surface s = q.createSurface(layer - dirPos(normal), normal);
-//                System.out.println(minX2 + " " + minY2 + " " + normal);
-//                System.out.println(Arrays.toString(s.corners));
                 Stream.of(s.corners).forEach(c -> c.add(orderComponents(0, normal, minX2, minY2)).mul(sg.lod));
-//                System.out.println(Arrays.toString(s.corners));
                 sg.surfaces.add(s);
                 for (int i = 0; i < q.w; i++) {
                     for (int j = 0; j < q.h; j++) {
@@ -109,7 +99,11 @@ public class SurfaceGroup {
                 }
                 for (int i = 0; i <= q.w; i++) {
                     for (int j = 0; j <= q.h; j++) {
-                        s.shadeTexture[i][j] = 1;//shade[q.x + i][q.y + j] / numHits2[q.x + i][q.y + j];
+                        if (shade[q.x + i][q.y + j] == 0 || numHits2[q.x + 1][q.y + j] == 0) {
+                            s.shadeTexture[i][j] = 1;
+                        } else {
+                            s.shadeTexture[i][j] = shade[q.x + i][q.y + j] / numHits2[q.x + i][q.y + j];
+                        }
                     }
                 }
             }

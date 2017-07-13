@@ -72,7 +72,7 @@ public class Chunk extends Behavior {
             }
         }
 
-        for (int lod = 2; lod < 4; lod *= 2) {
+        for (int lod = 2; lod < SIDE_LENGTH; lod *= 2) {
             surfaceGroups = surfaceGroups.stream().map(s -> s.downsample2()).collect(Collectors.toList());
             levelsOfDetail.add(surfaceGroups);
         }
