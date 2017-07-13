@@ -2,6 +2,7 @@ package chunk;
 
 import static chunk.Chunk.SIDE_LENGTH;
 import static util.MathUtils.clamp;
+import static util.MathUtils.mixColors;
 import util.Noise;
 
 public class ChunkSupplier {
@@ -26,8 +27,16 @@ public class ChunkSupplier {
         int blockDownsampling = Math.min(4 * lod, SIDE_LENGTH);
         int colorDownsampling = Math.min(8 * lod, SIDE_LENGTH);
 
-        double[][] blocks = fbmDownsample(noise, x, y, OCTAVES, FREQUENCY, blockDownsampling);
-        double[][] red = fbmDownsample(noise, 1000 + x, y, 1, 1 / 400., colorDownsampling);
+        double[][] elevation = fbmDownsample(noise, x, y, OCTAVES, FREQUENCY, blockDownsampling);
+        double[][] temperature = fbmDownsample(noise, 1000 + x, y, 1, 1 / 800., colorDownsampling);
+        double[][] humidity = fbmDownsample(noise, 2000 + x, y, 1, 1 / 800., colorDownsampling);
+        int[][] biomes = {
+            {0x20D600, 0x4CA127, 0x38761D, 0x274E13, 0xFFFFFF},
+            {0x20D600, 0x4CA127, 0x38761D, 0x274E13, 0xFFFFFF},
+            {0x20D600, 0x4CA127, 0x38761D, 0x7F745D, 0xFFFFFF},
+            {0x6FC44C, 0x6FC44C, 0x6FC44C, 0x7F745D, 0xFFFFFF},
+            {0xFFFA69, 0xFFFA69, 0xD6C794, 0x7F745D, 0x999999}};
+        //double[][] red = fbmDownsample(noise, 1000 + x, y, 1, 1 / 400., colorDownsampling);
         //double[][][] green = fbmDownsample(noise, 2000 + x, y, z, 4, 1 / 200., colorDownsampling);
         //double[][][] blue = fbmDownsample(noise, 3000 + x, y, z, 4, 1 / 200., colorDownsampling);
 
@@ -35,14 +44,22 @@ public class ChunkSupplier {
         for (int i = -1; i <= SIDE_LENGTH / lod; i++) {
             for (int j = -1; j <= SIDE_LENGTH / lod; j++) {
                 double cutoffAdd = (lod == 1 || (i >= 0 && j >= 0 && i < SIDE_LENGTH / lod && j < SIDE_LENGTH / lod)) ? 0 : lod;
-                int height = (int) Math.round(sample(blocks, i, j, blockDownsampling / lod) * HEIGHT / lod - cutoffAdd);
+                int height = (int) Math.round(sample(elevation, i, j, blockDownsampling / lod) * HEIGHT / lod - cutoffAdd);
 
-                int r = validateColor(200 * sample(red, i, j, colorDownsampling / lod));
-                int g = validateColor(220 + 30 * sample(red, i, j, colorDownsampling / lod));// - (z * SIDE_LENGTH + k * lod) / 1.);
-                int b = validateColor(-100 * sample(red, i, j, colorDownsampling / lod));
+                double temp = clamp(2 + sample(temperature, i, j, colorDownsampling / lod) + sample(elevation, i, j, blockDownsampling / lod), 0, 3.999);
+                double hum = clamp(2 + 2 * sample(humidity, i, j, colorDownsampling / lod), 0, 3.999);
+                int c0 = mixColors(biomes[(int) hum][(int) temp], biomes[(int) hum + 1][(int) temp], hum - (int) hum);
+                int c1 = mixColors(biomes[(int) hum][(int) temp + 1], biomes[(int) hum + 1][(int) temp + 1], hum - (int) hum);
+                int color = mixColors(c0, c1, temp - (int) temp);
 
-                ba.setBlockRangeInfinite(i, j, height, 0x10000 * r + 0x100 * g + b);
-                ba.setBlockRangeInfinite(i, j, height - 1, 0xAAAAAA);
+//                if (height < 0) {
+//                    color = 0x0060FF;
+//                }
+//                int r = validateColor(200 * sample(red, i, j, colorDownsampling / lod));
+//                int g = validateColor(220 + 30 * sample(red, i, j, colorDownsampling / lod));// - (z * SIDE_LENGTH + k * lod) / 1.);
+//                int b = validateColor(-100 * sample(red, i, j, colorDownsampling / lod));
+                ba.setBlockRangeInfinite(i, j, height, color);
+                //ba.setBlockRangeInfinite(i, j, height - 1, colorToGrayscale(color));
             }
         }
         return ba;

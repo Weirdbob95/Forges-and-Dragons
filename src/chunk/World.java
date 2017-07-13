@@ -16,10 +16,10 @@ import static util.MathUtils.*;
 
 public class World extends Behavior {
 
-    public static final int LOAD_DISTANCE = 6;
-    public static final int UNLOAD_DISTANCE = 8;
+    public static final int LOAD_DISTANCE = 16;
+    public static final int UNLOAD_DISTANCE = 20;
 
-    private static final int NUM_THREADS = 3;
+    private static final int NUM_THREADS = 6;
     static final FrustumIntersection VIEW_FRUSTUM = new FrustumIntersection();
 
     private final ChunkSupplier supplier;

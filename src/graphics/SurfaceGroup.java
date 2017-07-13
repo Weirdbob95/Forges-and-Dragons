@@ -1,9 +1,9 @@
 package graphics;
 
+import chunk.Mesher;
+import chunk.Mesher.Quad;
 import static engine.Activatable.using;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import opengl.BufferObject;
@@ -16,6 +16,7 @@ import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.*;
+import static util.MathUtils.*;
 
 public class SurfaceGroup {
 
@@ -24,6 +25,98 @@ public class SurfaceGroup {
     public Vector3i normal;
     public List<Surface> surfaces = new LinkedList();
     private int numSurfaces;
+    private int lod;
+
+    public SurfaceGroup(int lod) {
+        this.lod = lod;
+    }
+
+    public SurfaceGroup downsample2() {
+        SurfaceGroup sg = new SurfaceGroup(lod * 2);
+        sg.normal = normal;
+        if (surfaces.isEmpty()) {
+            return sg;
+        }
+
+        Map<Integer, List<Surface>> layers = new HashMap();
+        for (Surface s : surfaces) {
+            //int layer = (int) Math.floor(getComponent(s.corners[0], normal, 2) / sg.lod);
+            int layer = (int) Math.round((getComponent(s.corners[0], normal, 2) - dirPosNeg(normal) * .01) / sg.lod);
+            layers.putIfAbsent(layer, new LinkedList());
+            layers.get(layer).add(s);
+//            if (2 * layer > getComponent(s.corners[0], normal, 2) + 1) {
+//                System.out.println("ok");
+//            }
+//            if (2 * layer < getComponent(s.corners[0], normal, 2) - 1) {
+//                System.out.println("ok");
+//            }
+        }
+
+        layers.forEach((layer, surfaces) -> {
+            // Find the bounds on the rectangle to compute
+            int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE, maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
+            for (Surface s : surfaces) {
+                minX = Math.min(minX, (int) Math.floor((double) getComponent(s.corners[0], normal, 0) / sg.lod));
+                minY = Math.min(minY, (int) Math.floor((double) getComponent(s.corners[0], normal, 1) / sg.lod));
+                maxX = Math.max(maxX, (int) Math.ceil((double) getComponent(s.corners[3], normal, 0) / sg.lod));
+                maxY = Math.max(maxY, (int) Math.ceil((double) getComponent(s.corners[3], normal, 1) / sg.lod));
+            }
+            int minX2 = minX, minY2 = minY;
+            int width = maxX - minX, height = maxY - minY;
+
+            // Combine all of the surfaces into one layer
+            int[][] numHits = new int[width][height];
+            float[][][] colors = new float[width][height][3];
+            int[][] numHits2 = new int[width + 1][height + 1];
+            float[][] shade = new float[width + 1][height + 1];
+            boolean[][] mesh = new boolean[width][height];
+            for (Surface s : surfaces) {
+                int sMinX = (int) Math.floor((double) getComponent(s.corners[0], normal, 0) / lod);
+                int sMaxX = (int) Math.floor((double) getComponent(s.corners[3], normal, 0) / lod);
+                int sMinY = (int) Math.floor((double) getComponent(s.corners[0], normal, 1) / lod);
+                int sMaxY = (int) Math.floor((double) getComponent(s.corners[3], normal, 1) / lod);
+                for (int x = sMinX; x < sMaxX; x++) {
+                    for (int y = sMinY; y < sMaxY; y++) {
+                        numHits[(int) Math.floor(x / 2.0) - minX][(int) Math.floor(y / 2.0) - minY]++;
+                        for (int c = 0; c < 3; c++) {
+                            colors[(int) Math.floor(x / 2.0) - minX][(int) Math.floor(y / 2.0) - minY][c] += s.colorTexture[x - sMinX][y - sMinY][c];
+                        }
+                        mesh[(int) Math.floor(x / 2.0) - minX][(int) Math.floor(y / 2.0) - minY] = true;
+                    }
+                }
+                for (int x = sMinX; x <= sMaxX; x++) {
+                    for (int y = sMinY; y <= sMaxY; y++) {
+                        numHits2[(int) Math.floor(x / 2.0) - minX][(int) Math.floor(y / 2.0) - minY]++;
+                        shade[(int) Math.floor(x / 2.0) - minX][(int) Math.floor(y / 2.0) - minY] += s.shadeTexture[x - sMinX][y - sMinY];
+                    }
+                }
+            }
+
+            // Turn the layer back into a surface list
+            for (Quad q : Mesher.mesh(mesh)) {
+                Surface s = q.createSurface(layer - dirPos(normal), normal);
+//                System.out.println(minX2 + " " + minY2 + " " + normal);
+//                System.out.println(Arrays.toString(s.corners));
+                Stream.of(s.corners).forEach(c -> c.add(orderComponents(0, normal, minX2, minY2)).mul(sg.lod));
+//                System.out.println(Arrays.toString(s.corners));
+                sg.surfaces.add(s);
+                for (int i = 0; i < q.w; i++) {
+                    for (int j = 0; j < q.h; j++) {
+                        for (int c = 0; c < 3; c++) {
+                            s.colorTexture[i][j][c] = colors[q.x + i][q.y + j][c] / numHits[q.x + i][q.y + j];
+                        }
+                    }
+                }
+                for (int i = 0; i <= q.w; i++) {
+                    for (int j = 0; j <= q.h; j++) {
+                        s.shadeTexture[i][j] = 1;//shade[q.x + i][q.y + j] / numHits2[q.x + i][q.y + j];
+                    }
+                }
+            }
+        });
+
+        return sg;
+    }
 
     public void generateData() {
         numSurfaces = surfaces.size();

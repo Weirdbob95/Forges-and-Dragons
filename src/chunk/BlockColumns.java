@@ -1,36 +1,14 @@
 package chunk;
 
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
+import static util.MathUtils.AIR_COLOR;
 
 public class BlockColumns {
 
-    public static int AIR_COLOR = 0x1000000;
-    public static int ANY_SOLID = 0x1000001;
-
-    public static int arrayToColor(float[] array) {
-        int r = (int) (255 * array[0]);
-        int g = (int) (255 * array[1]);
-        int b = (int) (255 * array[2]);
-        return 0x10000 * r + 0x100 * g + b;
-    }
-
-    public static float[] colorToArray(int color) {
-        float[] r = new float[3];
-        for (int j = 2; j >= 0; j--) {
-            r[j] = (color % 256) / 255.0f;
-            color /= 256;
-        }
-        return r;
-    }
-
-    private final int size;
+    public final int size;
     private final TreeMap<Integer, Integer>[][] blockColumns;
 
     private boolean recomputeMinMax = true;
@@ -60,67 +38,6 @@ public class BlockColumns {
         } else {
             return c.ceilingEntry(z).getValue();
         }
-    }
-
-    public BlockColumns downsample2() {
-        int newSize = size / 2 + 1;
-        BlockColumns bc = new BlockColumns(newSize);
-        for (int x = 0; x < newSize; x++) {
-            for (int y = 0; y < newSize; y++) {
-                List<TreeMap<Integer, Integer>> columns = new LinkedList();
-                for (int c = 0; c < 4; c++) {
-                    int x2 = 2 * (x - 1) + c % 2;
-                    int y2 = 2 * (y - 1) + c / 2;
-                    if (x2 >= -1 && x2 < size - 1 && y2 >= -1 && y2 < size - 1) {
-                        columns.add(columnAt(x2, y2));
-                    }
-                }
-
-                int minZ = columns.stream().mapToInt(c -> c.firstKey()).min().getAsInt();
-                int maxZ = columns.stream().mapToInt(c -> c.lastKey()).max().getAsInt();
-//                Set<Integer> zVals = new TreeSet();
-//                for (TreeMap<Integer, Integer> c : columns) {
-//                    zVals.addAll(c.keySet().stream().map(z -> z / 2).collect(Collectors.toList()));
-//                }
-
-                TreeMap<Integer, Integer> newColumn = new TreeMap();
-                for (int z = minZ / 2 * 2 - 2; z <= maxZ + 3; z += 2) {
-                    int z2 = z;
-                    List<Integer> vals = columns.stream().flatMap(c -> Stream.of(columnValueAt(c, z2), columnValueAt(c, z2 + 1))).collect(Collectors.toList());
-//                    vals.removeIf(i -> i == AIR_COLOR);
-//                    if (vals.isEmpty()) {
-                    if (vals.contains(AIR_COLOR)) {
-                        newColumn.put(z / 2, AIR_COLOR);
-                    } else if (vals.size() < 8) {
-                        newColumn.put(z / 2, ANY_SOLID);
-                    } else {
-
-                        float r = (float) vals.stream().mapToDouble(i -> colorToArray(i)[0]).average().getAsDouble();
-                        float g = (float) vals.stream().mapToDouble(i -> colorToArray(i)[1]).average().getAsDouble();
-                        float b = (float) vals.stream().mapToDouble(i -> colorToArray(i)[2]).average().getAsDouble();
-                        newColumn.put(z / 2, arrayToColor(new float[]{r, g, b}));
-                    }
-                }
-                simplifyColumn(newColumn);
-                bc.blockColumns[x][y] = newColumn;
-//                for (int z = 0; z < newSize; z++) {
-//                    int[] blocks = new int[8];
-//                    for (int c = 0; c < 8; c++) {
-//                        blocks[c] = getBlock(2 * (x - 1) + c % 2, 2 * (y - 1) + c / 2 % 2, 2 * (z - 1) + c / 4);
-//                    }
-//                    if (x == 0 || y == 0 || z == 0 || x == newSize - 1 || y == newSize - 1 || z == newSize - 1) {
-//                        if (IntStream.of(blocks).allMatch(i -> i != 0)) {
-//                            r.set(x - 1, y - 1, z - 1, IntStream.of(blocks).filter(i -> i != 0).findFirst().getAsInt());
-//                        }
-//                    } else {
-//                        if (IntStream.of(blocks).anyMatch(i -> i != 0)) {
-//                            r.set(x - 1, y - 1, z - 1, IntStream.of(blocks).filter(i -> i != 0).findFirst().getAsInt());
-//                        }
-//                    }
-//                }
-            }
-        }
-        return bc;
     }
 
     public int getBlock(int x, int y, int z) {

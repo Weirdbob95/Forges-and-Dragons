@@ -17,12 +17,37 @@ public class MathUtils {
             new Vector2i(-1, 0), new Vector2i(1, 0),
             new Vector2i(0, -1), new Vector2i(0, 1));
 
+    public static int AIR_COLOR = 0x1FF00FF;
+    public static int ANY_SOLID = 0x2FFFF00;
+
+    public static int arrayToColor(float[] array) {
+        int r = clamp((int) (255 * array[0]), 0, 255);
+        int g = clamp((int) (255 * array[1]), 0, 255);
+        int b = clamp((int) (255 * array[2]), 0, 255);
+        return 0x10000 * r + 0x100 * g + b;
+    }
+
     public static double clamp(double x, double lower, double upper) {
         return Math.max(lower, Math.min(x, upper));
     }
 
     public static int clamp(int x, int lower, int upper) {
         return Math.max(lower, Math.min(x, upper));
+    }
+
+    public static float[] colorToArray(int color) {
+        float[] r = new float[3];
+        for (int i = 2; i >= 0; i--) {
+            r[i] = (color % 256) / 255.0f;
+            color /= 256;
+        }
+        return r;
+    }
+
+    public static int colorToGrayscale(int color) {
+        float[] r = colorToArray(color);
+        float a = (r[0] + r[1] + r[2]) / 3;
+        return arrayToColor(new float[]{a, a, a});
     }
 
     public static int dirPos(Vector3i dir) {
@@ -63,6 +88,14 @@ public class MathUtils {
             }
         }
         throw new RuntimeException("Invalid input");
+    }
+
+    public static int mixColors(int c1, int c2, double amt) {
+        float[] r = new float[3];
+        for (int i = 0; i < 3; i++) {
+            r[i] = (float) (colorToArray(c1)[i] * (1 - amt) + colorToArray(c2)[i] * amt);
+        }
+        return arrayToColor(r);
     }
 
     public static Vector3i orderComponents(int v, Vector3i dir, int i, int j) {

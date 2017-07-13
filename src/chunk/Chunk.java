@@ -1,6 +1,5 @@
 package chunk;
 
-import static chunk.BlockColumns.colorToArray;
 import chunk.Mesher.Quad;
 import static chunk.World.*;
 import engine.Behavior;
@@ -9,6 +8,7 @@ import graphics.SurfaceGroup;
 import graphics.SurfaceGroup.Surface;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
@@ -30,55 +30,54 @@ public class Chunk extends Behavior {
         colors = a;
         this.minLOD = minLOD;
 
-        for (int lod = 1 << minLOD; lod <= SIDE_LENGTH; lod *= 2) {
-            if (lod > 1 << minLOD) {
-                a = a.downsample2();
-            }
-            int size = SIDE_LENGTH / lod;
+        Vector3i min = new Vector3i(0, 0, a.minZ());
+        Vector3i del = new Vector3i(a.size - 2, a.size - 2, a.maxZ() + 1 - a.minZ());
 
-            Vector3i min = new Vector3i(0, 0, a.minZ());
-            Vector3i del = new Vector3i(size, size, a.maxZ() + 1 - a.minZ());
+        List<SurfaceGroup> surfaceGroups = new LinkedList();
+        levelsOfDetail.add(surfaceGroups);
 
-            List<SurfaceGroup> surfaceGroups = new LinkedList();
-            levelsOfDetail.add(surfaceGroups);
-            for (Vector3i dir : ALL_DIRS) {
-                SurfaceGroup sg = new SurfaceGroup();
-                surfaceGroups.add(sg);
-                sg.normal = dir;
+        for (Vector3i dir : ALL_DIRS) {
+            SurfaceGroup sg = new SurfaceGroup(1 << minLOD);
+            surfaceGroups.add(sg);
+            sg.normal = dir;
 
-                for (int v = 0; v < getComponent(del, dir, 2); v++) {
-                    boolean[][] toDraw = new boolean[getComponent(del, dir, 0)][getComponent(del, dir, 1)];
-                    for (int i = 0; i < getComponent(del, dir, 0); i++) {
-                        for (int j = 0; j < getComponent(del, dir, 1); j++) {
-                            toDraw[i][j] = a.solid(orderComponents(v, dir, i, j).add(min)) && !a.solid(orderComponents(v + dirPosNeg(dir), dir, i, j).add(min));
+            for (int v = 0; v < getComponent(del, dir, 2); v++) {
+                boolean[][] toDraw = new boolean[getComponent(del, dir, 0)][getComponent(del, dir, 1)];
+                for (int i = 0; i < getComponent(del, dir, 0); i++) {
+                    for (int j = 0; j < getComponent(del, dir, 1); j++) {
+                        toDraw[i][j] = a.solid(orderComponents(v, dir, i, j).add(min)) && !a.solid(orderComponents(v + dirPosNeg(dir), dir, i, j).add(min));
+                    }
+                }
+                for (Quad q : Mesher.mesh(toDraw)) {
+                    Surface s = q.createSurface(v, dir);
+                    Stream.of(s.corners).forEach(c -> c.add(min).mul(1 << minLOD));
+                    sg.surfaces.add(s);
+                    for (int i = 0; i < q.w; i++) {
+                        for (int j = 0; j < q.h; j++) {
+                            s.colorTexture[i][j] = colorToArray(a.getBlock(orderComponents(v, dir, q.x + i, q.y + j).add(min)));
                         }
                     }
-                    for (Quad q : Mesher.mesh(toDraw)) {
-                        Surface s = q.createSurface(v, dir);
-                        int lod2 = lod;
-                        Stream.of(s.corners).forEach(c -> c.add(min).mul(lod2));
-                        sg.surfaces.add(s);
-                        for (int i = 0; i < q.w; i++) {
-                            for (int j = 0; j < q.h; j++) {
-                                s.colorTexture[i][j] = colorToArray(a.getBlock(orderComponents(v, dir, q.x + i, q.y + j).add(min)));
-                            }
-                        }
-                        for (int i = 0; i < q.w + 1; i++) {
-                            for (int j = 0; j < q.h + 1; j++) {
-                                boolean[][] blocks = new boolean[2][2];
-                                for (int i2 = 0; i2 < 2; i2++) {
-                                    for (int j2 = 0; j2 < 2; j2++) {
-                                        blocks[i2][j2] = a.solid(orderComponents(v + dirPosNeg(dir), dir, q.x + i + i2 - 1, q.y + j + j2 - 1).add(min));
-                                    }
+                    for (int i = 0; i < q.w + 1; i++) {
+                        for (int j = 0; j < q.h + 1; j++) {
+                            boolean[][] blocks = new boolean[2][2];
+                            for (int i2 = 0; i2 < 2; i2++) {
+                                for (int j2 = 0; j2 < 2; j2++) {
+                                    blocks[i2][j2] = a.solid(orderComponents(v + dirPosNeg(dir), dir, q.x + i + i2 - 1, q.y + j + j2 - 1).add(min));
                                 }
-                                s.shadeTexture[i][j] = getAmbientOcculusion(blocks);
                             }
+                            s.shadeTexture[i][j] = getAmbientOcculusion(blocks);
                         }
                     }
                 }
-                sg.generateData();
             }
         }
+
+        for (int lod = 2; lod < 4; lod *= 2) {
+            surfaceGroups = surfaceGroups.stream().map(s -> s.downsample2()).collect(Collectors.toList());
+            levelsOfDetail.add(surfaceGroups);
+        }
+
+        levelsOfDetail.forEach(l -> l.forEach(s -> s.generateData()));
     }
 
     private static float getAmbientOcculusion(boolean[][] a) {

@@ -56,8 +56,10 @@ public class Player extends Behavior {
         double speed = sprint ? 30 : 8;
 
         Vector3d forwards = camera.facing();
+        //if (!sprint) {
         forwards.z = 0;
         forwards.normalize();
+        //}
         Vector3d sideways = camera.up.cross(forwards, new Vector3d());
 
         Vector3d idealVel = new Vector3d();
@@ -76,7 +78,9 @@ public class Player extends Behavior {
         if (idealVel.lengthSquared() > 0) {
             idealVel.normalize().mul(speed);
         }
+        //if (!sprint) {
         idealVel.z = velocity.velocity.z;
+        //}
 
         velocity.velocity.lerp(idealVel, 1 - Math.pow(.005, dt));
 
