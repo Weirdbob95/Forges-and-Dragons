@@ -106,8 +106,8 @@ public class Chunk extends Behavior {
     }
 
     private boolean intersectsFrustum() {
-        return VIEW_FRUSTUM.testAab(Chunk.SIDE_LENGTH * pos.x, Chunk.SIDE_LENGTH * pos.y, colors.minZ(),
-                Chunk.SIDE_LENGTH * (pos.x + 1), Chunk.SIDE_LENGTH * (pos.y + 1), colors.maxZ());
+        return VIEW_FRUSTUM.testAab(Chunk.SIDE_LENGTH * pos.x, Chunk.SIDE_LENGTH * pos.y, colors.minZ() * (1 << minLOD),
+                Chunk.SIDE_LENGTH * (pos.x + 1), Chunk.SIDE_LENGTH * (pos.y + 1), colors.maxZ() * (1 << minLOD));
     }
 
     @Override
@@ -119,8 +119,8 @@ public class Chunk extends Behavior {
             SurfaceGroup.shader.setUniform("lod", 1 << lod);
             List<SurfaceGroup> surfaceGroups = levelsOfDetail.get(lod - minLOD);
 
-            Vector3d min = chunkToPos(pos).add(new Vector3d(0, 0, colors.minZ()));
-            Vector3d max = chunkToPos(pos).add(new Vector3d(SIDE_LENGTH, SIDE_LENGTH, colors.maxZ()));
+            Vector3d min = chunkToPos(pos).add(new Vector3d(0, 0, colors.minZ() * (1 << minLOD)));
+            Vector3d max = chunkToPos(pos).add(new Vector3d(SIDE_LENGTH, SIDE_LENGTH, colors.maxZ() * (1 << minLOD)));
 
             for (int i = 0; i < 6; i++) {
                 surfaceGroups.get(i).init();

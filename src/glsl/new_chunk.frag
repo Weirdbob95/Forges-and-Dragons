@@ -43,7 +43,7 @@ void main() {
 
     float shadow = 1 + (dot(normal, vec3(.1, .3, 1)) - 1) / 5;
     float fog = 1.0 - clamp(exp(-gl_FragCoord.z / gl_FragCoord.w * .002), 0.0, 1.0);
-    color = mix(rawColor * mix(ao * shadow, 1, pow(fog, .4)), FOG_COLOR, fog);
+    color = mix(rawColor * mix(ao * shadow, 1, pow(fog, .4)), FOG_COLOR, fog*fog);
 
 //    color = vec4(texPos, 0, 1);
 }

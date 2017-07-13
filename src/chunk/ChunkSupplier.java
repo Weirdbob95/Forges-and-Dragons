@@ -8,8 +8,8 @@ import util.Noise;
 public class ChunkSupplier {
 
     private static final int OCTAVES = 4;
-    private static final double FREQUENCY = 1 / 500.;
-    private static final double HEIGHT = 50;
+    private static final double FREQUENCY = 1 / 1500.;
+    private static final double HEIGHT = 150;
 
     public static final double MAX_Z = 2. * HEIGHT / SIDE_LENGTH;
 
@@ -28,8 +28,8 @@ public class ChunkSupplier {
         int colorDownsampling = Math.min(8 * lod, SIDE_LENGTH);
 
         double[][] elevation = fbmDownsample(noise, x, y, OCTAVES, FREQUENCY, blockDownsampling);
-        double[][] temperature = fbmDownsample(noise, 1000 + x, y, 1, 1 / 800., colorDownsampling);
-        double[][] humidity = fbmDownsample(noise, 2000 + x, y, 1, 1 / 800., colorDownsampling);
+        double[][] temperature = fbmDownsample(noise, 10000 + x, y, 1, 1 / 2000., colorDownsampling);
+        double[][] humidity = fbmDownsample(noise, 20000 + x, y, 1, 1 / 2000., colorDownsampling);
         int[][] biomes = {
             {0x20D600, 0x4CA127, 0x38761D, 0x274E13, 0xFFFFFF},
             {0x20D600, 0x4CA127, 0x38761D, 0x274E13, 0xFFFFFF},
