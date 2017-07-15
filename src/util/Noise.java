@@ -2,13 +2,25 @@ package util;
 
 public class Noise {
 
-    public double seed;
+    private final double seed;
 
     public Noise(double seed) {
         this.seed = seed;
     }
 
-    public double fbm(double x, double y, int octaves, double frequency) {
+    public double multi(double x, double y, int octaves, double frequency) {
+        double r = 0;
+        for (int i = 0; i < octaves; i++) {
+            r += perlin(x, y, frequency * (1 << i)) / (1 << i);
+        }
+        return r / (2 - 1.0 / (1 << (octaves - 1)));
+    }
+
+    public double perlin(double x, double y, double frequency) {
+        return SimplexNoise.noise(x * frequency, y * frequency, seed) * .5 + .5;
+    }
+
+    /*public double fbm(double x, double y, int octaves, double frequency) {
         return multi(x, y, octaves, frequency) + multi(x, y, octaves, frequency * 20) / 20;
     }
 
@@ -58,9 +70,9 @@ public class Noise {
 
     public double ridged(double x, double y, int octaves, double frequency) {
         return 1 - 2 * Math.abs(multi(x, y, octaves, frequency));
-    }
+    }*/
 
-    /*
+ /*
  * A speed-improved simplex noise algorithm for 2D, 3D and 4D in Java.
  *
  * Based on example code by Stefan Gustavson (stegu@itn.liu.se).

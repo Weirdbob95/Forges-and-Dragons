@@ -117,8 +117,16 @@ public class World extends Behavior {
         }
     }
 
-    public static Vector3d chunkToCenterPos(Vector2i pos) {
-        return toVec3d(pos).add(new Vector3d(.5)).mul(Chunk.SIDE_LENGTH);
+    public Vector3d chunkToCenterPos(Vector2i pos) {
+        Vector3d r = chunkToPos(pos).add(new Vector3d(.5, .5, 0).mul(Chunk.SIDE_LENGTH));
+        if (chunks.containsKey(pos)) {
+            r.add(0, 0, chunks.get(pos).maxZ() / 2 + chunks.get(pos).minZ() / 2);
+        }
+        return r;
+    }
+
+    int desiredLOD(Vector2i pos) {
+        return (int) chunkToCenterPos(pos).sub(Camera.camera.position).length() / 400;
     }
 
     public static Vector3d chunkToPos(Vector2i pos) {
@@ -127,9 +135,5 @@ public class World extends Behavior {
 
     public static Vector2i posToChunk(Vector3d pos) {
         return new Vector2i((int) Math.floor(pos.x / Chunk.SIDE_LENGTH), (int) Math.floor(pos.y / Chunk.SIDE_LENGTH));
-    }
-
-    static int desiredLOD(Vector2i pos) {
-        return (int) World.chunkToCenterPos(pos).sub(Camera.camera.position).length() / 400;
     }
 }

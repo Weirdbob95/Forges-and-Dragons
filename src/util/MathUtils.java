@@ -21,9 +21,9 @@ public class MathUtils {
     public static int ANY_SOLID = 0x2FFFF00;
 
     public static int arrayToColor(float[] array) {
-        int r = clamp((int) (255 * array[0]), 0, 255);
-        int g = clamp((int) (255 * array[1]), 0, 255);
-        int b = clamp((int) (255 * array[2]), 0, 255);
+        int r = clamp((int) (256 * array[0]), 0, 255);
+        int g = clamp((int) (256 * array[1]), 0, 255);
+        int b = clamp((int) (256 * array[2]), 0, 255);
         return 0x10000 * r + 0x100 * g + b;
     }
 

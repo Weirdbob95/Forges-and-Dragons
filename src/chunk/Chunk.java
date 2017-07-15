@@ -3,6 +3,7 @@ package chunk;
 import chunk.Mesher.Quad;
 import static chunk.World.*;
 import engine.Behavior;
+import engine.Main;
 import graphics.Camera;
 import graphics.SurfaceGroup;
 import graphics.SurfaceGroup.Surface;
@@ -106,8 +107,16 @@ public class Chunk extends Behavior {
     }
 
     private boolean intersectsFrustum() {
-        return VIEW_FRUSTUM.testAab(Chunk.SIDE_LENGTH * pos.x, Chunk.SIDE_LENGTH * pos.y, colors.minZ() * (1 << minLOD),
-                Chunk.SIDE_LENGTH * (pos.x + 1), Chunk.SIDE_LENGTH * (pos.y + 1), colors.maxZ() * (1 << minLOD));
+        return VIEW_FRUSTUM.testAab(Chunk.SIDE_LENGTH * pos.x, Chunk.SIDE_LENGTH * pos.y, minZ(),
+                Chunk.SIDE_LENGTH * (pos.x + 1), Chunk.SIDE_LENGTH * (pos.y + 1), maxZ());
+    }
+
+    public int maxZ() {
+        return colors.maxZ() * (1 << minLOD);
+    }
+
+    public int minZ() {
+        return colors.minZ() * (1 << minLOD);
     }
 
     @Override
@@ -115,12 +124,12 @@ public class Chunk extends Behavior {
         if (intersectsFrustum()) {
             SurfaceGroup.shader.setUniform("worldMatrix", Camera.camera.getWorldMatrix(toVec3d(pos).mul(SIDE_LENGTH)));
 
-            int lod = clamp(desiredLOD(pos), minLOD, minLOD + levelsOfDetail.size() - 1);
+            int lod = clamp(Main.world.desiredLOD(pos), minLOD, minLOD + levelsOfDetail.size() - 1);
             SurfaceGroup.shader.setUniform("lod", 1 << lod);
             List<SurfaceGroup> surfaceGroups = levelsOfDetail.get(lod - minLOD);
 
-            Vector3d min = chunkToPos(pos).add(new Vector3d(0, 0, colors.minZ() * (1 << minLOD)));
-            Vector3d max = chunkToPos(pos).add(new Vector3d(SIDE_LENGTH, SIDE_LENGTH, colors.maxZ() * (1 << minLOD)));
+            Vector3d min = chunkToPos(pos).add(new Vector3d(0, 0, minZ()));
+            Vector3d max = chunkToPos(pos).add(new Vector3d(SIDE_LENGTH, SIDE_LENGTH, maxZ()));
 
             for (int i = 0; i < 6; i++) {
                 surfaceGroups.get(i).init();
