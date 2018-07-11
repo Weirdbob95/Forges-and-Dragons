@@ -64,7 +64,7 @@ public abstract class Behavior {
             throw new RuntimeException("Can only destroy root behaviors");
         }
         for (Behavior b : subBehaviors.values()) {
-            destroyActual();
+            b.destroyActual();
         }
         destroyActual();
     }
@@ -73,7 +73,11 @@ public abstract class Behavior {
         ALL_BEHAVIORS.remove(this);
         RENDER_ORDER.remove(this);
         UPDATE_ORDER.remove(this);
-        createInner();
+        destroyInner();
+    }
+
+    public static <T extends Behavior> T findRoot(Class<T> c) {
+        return (T) ALL_BEHAVIORS.stream().filter(c::isInstance).filter(b -> b.isRoot()).findAny().get();
     }
 
     public final <T extends Behavior> T get(Class<T> c) {

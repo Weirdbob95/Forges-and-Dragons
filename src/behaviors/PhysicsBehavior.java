@@ -10,8 +10,7 @@ public class PhysicsBehavior extends Behavior {
     public final PositionBehavior position = require(PositionBehavior.class);
     public final PreviousPositionBehavior prevPos = require(PreviousPositionBehavior.class);
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
-
-    public Vector2d hitboxSize = new Vector2d();
+    public final ColliderBehavior collider = require(ColliderBehavior.class);
 
     private boolean moveToWall(Vector2d del) {
         if (!wouldCollideAt(position.position.add(del, new Vector2d()))) {
@@ -59,7 +58,7 @@ public class PhysicsBehavior extends Behavior {
     }
 
     public boolean wouldCollideAt(Vector2d position) {
-        return false;
+        return collider.solidCollisionAt(position);
         //return Main.world.collides(position.sub(hitboxSize, new Vector2d()), position.add(hitboxSize, new Vector2d()));
     }
 }
