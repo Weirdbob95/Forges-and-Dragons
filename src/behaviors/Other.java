@@ -53,10 +53,10 @@ public abstract class Other {
         @Override
         public void update(double dt) {
             dtList.add(dt);
-            if (dtList.size() > 10) {
+            if (dtList.size() > 100) {
                 dtList.remove();
             }
-            fps = 10 / dtList.stream().mapToDouble(x -> x).sum();
+            fps = dtList.size() / dtList.stream().mapToDouble(x -> x).sum();
             Window.window.setTitle("FPS: " + Math.round(fps));
         }
     }

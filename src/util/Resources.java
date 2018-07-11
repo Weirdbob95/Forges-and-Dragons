@@ -16,6 +16,6 @@ public class Resources {
     }
 
     public static ShaderProgram loadShaderProgram(String name) {
-        return new ShaderProgram(Resources.loadFileAsString("src/glsl/" + name + ".vert"), Resources.loadFileAsString("src/glsl/" + name + ".frag"));
+        return new ShaderProgram(Resources.loadFileAsString("src/shaders/" + name + ".vert"), Resources.loadFileAsString("src/shaders/" + name + ".frag"));
     }
 }

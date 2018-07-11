@@ -22,9 +22,9 @@ public class Camera {
 
     public Matrix4d getWorldMatrix(Vector2d position, double rotation, double scaleX, double scaleY) {
         return getViewMatrix()
-                .rotate(-rotation, 0, 0, 1)
-                .scale(scaleX, scaleY, 1)
-                .translate(new Vector3d(position.x, position.y, 0));
+                .translate(new Vector3d(position.x, position.y, 0))
+                .rotate(rotation, 0, 0, 1)
+                .scale(scaleX, scaleY, 1);
     }
 
     public static Matrix4d getProjectionMatrix() {
