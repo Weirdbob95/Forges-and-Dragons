@@ -2,41 +2,38 @@ package graphics;
 
 import opengl.Window;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 
 public class Camera {
 
     public static Camera camera = new Camera();
 
-    public Vector3d position = new Vector3d(0, 0, 0);
-    public double horAngle, vertAngle;
-    public Vector3d up = new Vector3d(0, 0, 1);
+    public Vector2d position = new Vector2d(0, 0);
+    public double rotation = 0;
+    public double zoom = 1;
 
     private Matrix4d getViewMatrix() {
         return new Matrix4d()
-                .rotate(vertAngle - Math.PI / 2, new Vector3d(1, 0, 0))
-                .rotate(Math.PI / 2 - horAngle, new Vector3d(0, 0, 1))
-                .translate(position.mul(-1, new Vector3d()));
-
-        // Why am I adding/subtracting doubles from the angles? Idk, but it works.
+                .scale(zoom)
+                .rotate(rotation, 0, 0, 1)
+                .translate(new Vector3d(position.x, position.y, 0));
     }
 
-    public Matrix4d getWorldMatrix(Vector3d translate) {
-        return getViewMatrix().translate(translate);
+    public Matrix4d getWorldMatrix(Vector2d position, double rotation, double scaleX, double scaleY) {
+        return getViewMatrix()
+                .rotate(-rotation, 0, 0, 1)
+                .scale(scaleX, scaleY, 1)
+                .translate(new Vector3d(position.x, position.y, 0));
     }
 
     public static Matrix4d getProjectionMatrix() {
-        return getProjectionMatrix(Math.PI / 2, Window.WIDTH, Window.HEIGHT, .2f, 2000);
+        return getProjectionMatrix(Window.WIDTH * -.5, Window.WIDTH * .5, Window.HEIGHT * -.5, Window.HEIGHT * .5);
     }
 
-    private static Matrix4d getProjectionMatrix(double fov, double width, double height, double zNear, double zFar) {
-        double aspectRatio = width / height;
+    private static Matrix4d getProjectionMatrix(double left, double right, double bottom, double top) {
         Matrix4d projectionMatrix = new Matrix4d();
-        projectionMatrix.perspective(fov, aspectRatio, zNear, zFar);
+        projectionMatrix.setOrtho2D(left, right, bottom, top);
         return projectionMatrix;
-    }
-
-    public Vector3d facing() {
-        return new Vector3d(Math.cos(vertAngle) * Math.cos(horAngle), Math.cos(vertAngle) * Math.sin(horAngle), -Math.sin(vertAngle));
     }
 }

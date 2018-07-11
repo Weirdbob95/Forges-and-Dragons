@@ -1,9 +1,9 @@
 package behaviors;
 
 import engine.Behavior;
-import org.joml.Vector3d;
+import org.joml.Vector2d;
 
 public class PositionBehavior extends Behavior {
 
-    public Vector3d position = new Vector3d();
+    public Vector2d position = new Vector2d();
 }
