@@ -3,6 +3,7 @@ package engine;
 import static engine.Core.MAIN_THREAD;
 import static engine.Core.onMainThread;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class Behavior {
 
@@ -92,6 +93,12 @@ public abstract class Behavior {
 
     public static Collection<Behavior> getAll() {
         return new LinkedList<>(ALL_BEHAVIORS);
+    }
+
+    public static <T extends Behavior> Collection<T> getAllOfType(Class<T> c) {
+        return (Collection) getAll().stream()
+                .filter(c::isInstance)
+                .collect(Collectors.toList());
     }
 
     public static Collection<Behavior> getAllRenderOrder() {

@@ -1,8 +1,8 @@
 package game;
 
-import behaviors.AnimationBehavior;
 import behaviors.PhysicsBehavior;
 import behaviors.PositionBehavior;
+import behaviors.SpaceOccupierBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
 import graphics.Animation;
@@ -14,12 +14,13 @@ public class Monster extends Behavior {
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
     public final PhysicsBehavior physics = require(PhysicsBehavior.class);
     public final Creature creature = require(Creature.class);
-    public final AnimationBehavior animation = require(AnimationBehavior.class);
+    public final FourDirAnimation fourDirAnimation = require(FourDirAnimation.class);
+    public final SpaceOccupierBehavior spaceOccupier = require(SpaceOccupierBehavior.class);
 
     @Override
     public void createInner() {
         physics.collider.hitboxSize = new Vector2d(16, 24);
-        animation.animation = new Animation("skeleton/left_anim");
+        fourDirAnimation.animation.animation = new Animation("skeleton_anim");
     }
 
     @Override

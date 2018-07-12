@@ -1,14 +1,28 @@
 package graphics;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import util.Resources;
 
 public class Animation {
 
+    private static final Map<String, Animation> animationCache = new HashMap();
+
+    public static Animation load(String fileName) {
+        if (!animationCache.containsKey(fileName)) {
+            Animation a = new Animation(fileName);
+            animationCache.put(fileName, a);
+        }
+        return animationCache.get(fileName);
+    }
+
     public int length;
     public double speed;
-    public List<Sprite> sprites;
+    public List<String> modes = Arrays.asList("");
+    private Map<String, List<Sprite>> sprites;
 
     public Animation(String fileName) {
         try {
@@ -20,13 +34,31 @@ public class Animation {
                 if (setting.startsWith("speed: ")) {
                     speed = Double.parseDouble(setting.substring(7));
                 }
+                if (setting.startsWith("modes: ")) {
+                    modes = Arrays.asList(setting.substring(7).split(" "));
+                }
             }
-            sprites = new ArrayList();
-            for (int i = 0; i < length; i++) {
-                sprites.add(Sprite.load(fileName + "/" + i + ".png"));
+            sprites = new HashMap();
+            for (String mode : modes) {
+                sprites.put(mode, new ArrayList());
+                for (int i = 0; i < length; i++) {
+                    if (mode.equals("")) {
+                        sprites.get(mode).add(Sprite.load(fileName + "/" + i + ".png"));
+                    } else {
+                        sprites.get(mode).add(Sprite.load(fileName + "/" + mode + "/" + i + ".png"));
+                    }
+                }
             }
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public Sprite getSpriteOrNull(String mode, int index) {
+        if (modes.contains(mode) && index >= 0 && index < length) {
+            return sprites.get(mode).get(index);
+        } else {
+            return null;
         }
     }
 }

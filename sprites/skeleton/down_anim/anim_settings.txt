@@ -1,2 +1,0 @@
-length: 4
-speed: 4

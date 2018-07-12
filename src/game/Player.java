@@ -1,15 +1,14 @@
 package game;
 
-import behaviors.ColliderBehavior;
-import behaviors.LifetimeBehavior;
 import behaviors.PhysicsBehavior;
 import behaviors.PositionBehavior;
-import behaviors.SpriteBehavior;
+import behaviors.SpaceOccupierBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
 import engine.Input;
+import graphics.Animation;
 import graphics.Camera;
-import graphics.Sprite;
+import java.util.List;
 import org.joml.Vector2d;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_1;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_2;
@@ -24,13 +23,16 @@ public class Player extends Behavior {
     public final PositionBehavior position = require(PositionBehavior.class);
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
     public final PhysicsBehavior physics = require(PhysicsBehavior.class);
-    public final SpriteBehavior sprite = require(SpriteBehavior.class);
+    public final FourDirAnimation fourDirAnimation = require(FourDirAnimation.class);
     public final AttackerBehavior attacker = require(AttackerBehavior.class);
+    public final SpaceOccupierBehavior spaceOccupier = require(SpaceOccupierBehavior.class);
 
     @Override
     public void createInner() {
         physics.collider.hitboxSize = new Vector2d(24, 24);
-        sprite.sprite = Sprite.load("rock.png");
+        fourDirAnimation.animation.animation = new Animation("skeleton_anim");
+        fourDirAnimation.directionSupplier = () -> Input.mouseWorld().sub(position.position);
+        fourDirAnimation.playAnimSupplier = () -> velocity.velocity.length() > 10;
         attacker.attackCallback = this::doSwordSwing;
     }
 
@@ -54,10 +56,8 @@ public class Player extends Behavior {
         }
         goalVelocity.mul(200);
 
-        double acceleration = 20;
+        double acceleration = 2000;
         velocity.velocity.lerp(goalVelocity, 1 - Math.exp(acceleration * -dt));
-
-        sprite.rotation = direction(Input.mouseWorld().sub(position.position));
 
         if (Input.mouseDown(0)) {
             attacker.attack();
@@ -85,33 +85,17 @@ public class Player extends Behavior {
     public void doSwordSwing() {
         SwordSwing ss = new SwordSwing();
         ss.position.position = position.position;
-        ss.sprite.rotation = sprite.rotation;
+        ss.sprite.rotation = direction(Input.mouseWorld().sub(position.position));
         ss.create();
 
         Vector2d swingPos = Input.mouseWorld().sub(position.position).normalize().mul(30).add(position.position);
-        for (ColliderBehavior cb : physics.collider.allTouchingAt(swingPos)) {
-            Monster m = cb.getOrNull(Monster.class);
-            if (m != null) {
-                m.creature.hpCurrent -= 20;
-            }
-        }
-
+        ss.attack((List) physics.collider.allTouchingAt(swingPos));
+//        for (ColliderBehavior cb : physics.collider.allTouchingAt(swingPos)) {
+//            Monster m = cb.getOrNull(Monster.class);
+//            if (m != null) {
+//                m.creature.hpCurrent -= 20;
+//            }
+//        }
         attacker.attackCooldownRemaining = .3;
-    }
-
-    public static class SwordSwing extends Behavior {
-
-        public final PositionBehavior position = require(PositionBehavior.class);
-        public final SpriteBehavior sprite = require(SpriteBehavior.class);
-        public final LifetimeBehavior lifetime = require(LifetimeBehavior.class);
-
-        public Player player;
-
-        @Override
-        public void createInner() {
-            sprite.sprite = Sprite.load("slash6.png");
-            sprite.scale = 1;
-            lifetime.lifetime = .1;
-        }
     }
 }

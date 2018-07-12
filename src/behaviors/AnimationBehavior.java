@@ -9,6 +9,7 @@ public class AnimationBehavior extends Behavior {
     public final SpriteBehavior sprite = require(SpriteBehavior.class);
 
     public Animation animation = null;
+    public String animMode = "";
     public double animProgress = 0;
     public double animSpeed = 1;
     public boolean loop = true;
@@ -27,7 +28,7 @@ public class AnimationBehavior extends Behavior {
         if (animation == null) {
             sprite.sprite = null;
         } else {
-            sprite.sprite = animation.sprites.get((int) animProgress);
+            sprite.sprite = animation.getSpriteOrNull(animMode, (int) animProgress);
         }
     }
 }

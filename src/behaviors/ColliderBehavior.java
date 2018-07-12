@@ -1,15 +1,11 @@
 package behaviors;
 
 import engine.Behavior;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.joml.Vector2d;
 
 public class ColliderBehavior extends Behavior {
-
-    private static final Collection<ColliderBehavior> ALL_COLLIDERS = new LinkedList();
 
     public final PositionBehavior position = require(PositionBehavior.class);
 
@@ -19,22 +15,12 @@ public class ColliderBehavior extends Behavior {
     public List<ColliderBehavior> allTouchingAt(Vector2d pos) {
         Vector2d oldPos = position.position;
         position.position = pos;
-        List<ColliderBehavior> r = ALL_COLLIDERS.stream()
+        List<ColliderBehavior> r = getAllOfType(ColliderBehavior.class).stream()
                 .filter(cb -> cb != this)
                 .filter(this::intersects)
                 .collect(Collectors.toList());
         position.position = oldPos;
         return r;
-    }
-
-    @Override
-    public void createInner() {
-        ALL_COLLIDERS.add(this);
-    }
-
-    @Override
-    public void destroyInner() {
-        ALL_COLLIDERS.remove(this);
     }
 
     public <T extends Behavior> T findTouching(Class<T> c) {
