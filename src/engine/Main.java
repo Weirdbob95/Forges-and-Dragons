@@ -8,6 +8,7 @@ import game.Player;
 import game.Wall;
 import org.joml.Vector2d;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_M;
 import static org.lwjgl.opengl.GL11.*;
 
 public abstract class Main {
@@ -34,9 +35,13 @@ public abstract class Main {
             w.create();
         }
 
-        Monster m = new Monster();
-        m.position.position = new Vector2d(200, 200);
-        m.create();
+        onUpdate(0, dt -> {
+            if (Input.keyJustPressed(GLFW_KEY_M)) {
+                Monster m = new Monster();
+                m.position.position = Input.mouseWorld();
+                m.create();
+            }
+        });
 
         new FPSBehavior().create();
 

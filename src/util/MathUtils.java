@@ -15,4 +15,13 @@ public class MathUtils {
     public static double direction(Vector2d v) {
         return Math.atan2(v.y, v.x);
     }
+
+    public static double mod(double x, double m) {
+        return (x % m + m) % m;
+    }
+
+    public static Vector2d rotate(Vector2d v, double angle) {
+        return new Vector2d(Math.cos(angle) * v.x - Math.sin(angle) * v.y,
+                Math.sin(angle) * v.x + Math.cos(angle) * v.y);
+    }
 }

@@ -17,6 +17,6 @@ public class Wall extends Behavior {
     public void createInner() {
         collider.hitboxSize = new Vector2d(16, 16);
         collider.isSolid = true;
-        sprite.sprite = new Sprite("wall.png");
+        sprite.sprite = Sprite.load("wall.png");
     }
 }

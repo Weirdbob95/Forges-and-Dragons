@@ -22,6 +22,7 @@ public abstract class Behavior {
             // This is a root behavior
             root = this;
             subBehaviors = new HashMap();
+            subBehaviors.put(getClass(), this);
         } else {
             // This is not a root behavior
             root = currentRoot;
@@ -44,7 +45,7 @@ public abstract class Behavior {
         for (Behavior b : subBehaviors.values()) {
             b.createActual();
         }
-        createActual();
+        //createActual();
         return this;
     }
 
@@ -66,7 +67,7 @@ public abstract class Behavior {
         for (Behavior b : subBehaviors.values()) {
             b.destroyActual();
         }
-        destroyActual();
+        //destroyActual();
     }
 
     private void destroyActual() {
@@ -81,8 +82,9 @@ public abstract class Behavior {
     }
 
     public final <T extends Behavior> T get(Class<T> c) {
-        if (root.subBehaviors.containsKey(c)) {
-            return (T) root.subBehaviors.get(c);
+        T t = getOrNull(c);
+        if (t != null) {
+            return t;
         } else {
             throw new RuntimeException("Behavior not found: " + c.getSimpleName());
         }
@@ -98,6 +100,14 @@ public abstract class Behavior {
 
     public static Collection<Behavior> getAllUpdateOrder() {
         return new LinkedList<>(UPDATE_ORDER);
+    }
+
+    public final <T extends Behavior> T getOrNull(Class<T> c) {
+        return (T) root.subBehaviors.get(c);
+    }
+
+    public final Behavior getRoot() {
+        return root;
     }
 
     public final Set<Class<? extends Behavior>> getSubBehaviors() {

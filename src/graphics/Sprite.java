@@ -4,6 +4,8 @@ import de.matthiasmann.twl.utils.PNGDecoder;
 import static engine.Activatable.using;
 import java.io.FileInputStream;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import opengl.BufferObject;
 import opengl.ShaderProgram;
 import opengl.Texture;
@@ -21,20 +23,30 @@ import util.Resources;
 
 public class Sprite {
 
-    private static float vertices[] = {
+    private static final Map<String, Sprite> spriteCache = new HashMap();
+
+    public static Sprite load(String fileName) {
+        if (!spriteCache.containsKey(fileName)) {
+            Sprite s = new Sprite(fileName);
+            spriteCache.put(fileName, s);
+        }
+        return spriteCache.get(fileName);
+    }
+
+    private static final float vertices[] = {
         0.5f, 0.5f, 0.0f, 1.0f, 0.0f, // top right
         0.5f, -0.5f, 0.0f, 1.0f, 1.0f, // bottom right
         -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom left
         -0.5f, 0.5f, 0.0f, 0.0f, 0.0f // top left
     };
-    private static int indices[] = {
+    private static final int indices[] = {
         0, 1, 3, // first Triangle
         1, 2, 3 // second Triangle
     };
 
-    private static ShaderProgram spriteShader = Resources.loadShaderProgram("sprite");
+    private static final ShaderProgram spriteShader = Resources.loadShaderProgram("sprite");
 
-    private static VertexArrayObject spriteVAO = VertexArrayObject.createVAO(() -> {
+    private static final VertexArrayObject spriteVAO = VertexArrayObject.createVAO(() -> {
         BufferObject vbo = new BufferObject(GL_ARRAY_BUFFER, vertices);
         BufferObject ebo = new BufferObject(GL_ELEMENT_ARRAY_BUFFER, indices);
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 20, 0);
@@ -47,7 +59,7 @@ public class Sprite {
     private int width;
     private int height;
 
-    public Sprite(String fileName) {
+    private Sprite(String fileName) {
         try {
             texture = new Texture("sprites/" + fileName);
             PNGDecoder decoder = new PNGDecoder(new FileInputStream("sprites/" + fileName));

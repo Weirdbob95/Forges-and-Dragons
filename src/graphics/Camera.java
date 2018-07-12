@@ -17,7 +17,7 @@ public class Camera {
         return new Matrix4d()
                 .scale(zoom)
                 .rotate(rotation, 0, 0, 1)
-                .translate(new Vector3d(position.x, position.y, 0));
+                .translate(new Vector3d(-position.x, -position.y, 0));
     }
 
     public Matrix4d getWorldMatrix(Vector2d position, double rotation, double scaleX, double scaleY) {

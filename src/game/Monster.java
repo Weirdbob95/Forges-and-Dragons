@@ -1,10 +1,11 @@
 package game;
 
+import behaviors.AnimationBehavior;
 import behaviors.PhysicsBehavior;
 import behaviors.PositionBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
-import graphics.Sprite;
+import graphics.Animation;
 import org.joml.Vector2d;
 
 public class Monster extends Behavior {
@@ -13,11 +14,12 @@ public class Monster extends Behavior {
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
     public final PhysicsBehavior physics = require(PhysicsBehavior.class);
     public final Creature creature = require(Creature.class);
+    public final AnimationBehavior animation = require(AnimationBehavior.class);
 
     @Override
     public void createInner() {
-        physics.collider.hitboxSize = new Vector2d(24, 24);
-        creature.sprite.sprite = new Sprite("rock.png");
+        physics.collider.hitboxSize = new Vector2d(16, 24);
+        animation.animation = new Animation("skeleton/left_anim");
     }
 
     @Override

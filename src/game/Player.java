@@ -1,14 +1,18 @@
 package game;
 
+import behaviors.ColliderBehavior;
+import behaviors.LifetimeBehavior;
 import behaviors.PhysicsBehavior;
 import behaviors.PositionBehavior;
+import behaviors.SpriteBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
 import engine.Input;
 import graphics.Camera;
 import graphics.Sprite;
-import opengl.Window;
 import org.joml.Vector2d;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_1;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_2;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
@@ -20,12 +24,14 @@ public class Player extends Behavior {
     public final PositionBehavior position = require(PositionBehavior.class);
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
     public final PhysicsBehavior physics = require(PhysicsBehavior.class);
-    public final Creature creature = require(Creature.class);
+    public final SpriteBehavior sprite = require(SpriteBehavior.class);
+    public final AttackerBehavior attacker = require(AttackerBehavior.class);
 
     @Override
     public void createInner() {
         physics.collider.hitboxSize = new Vector2d(24, 24);
-        creature.sprite.sprite = new Sprite("rock.png");
+        sprite.sprite = Sprite.load("rock.png");
+        attacker.attackCallback = this::doSwordSwing;
     }
 
     @Override
@@ -51,14 +57,61 @@ public class Player extends Behavior {
         double acceleration = 20;
         velocity.velocity.lerp(goalVelocity, 1 - Math.exp(acceleration * -dt));
 
-        Vector2d mouseWorld = Input.mouse().sub(Window.WIDTH / 2, Window.HEIGHT / 2, new Vector2d()).mul(1, -1).sub(Camera.camera.position);
-        creature.sprite.rotation = direction(mouseWorld.sub(position.position, new Vector2d()));
+        sprite.rotation = direction(Input.mouseWorld().sub(position.position));
 
-        if (Input.mouseJustPressed(0)) {
-            Arrow a = new Arrow();
-            a.position.position = new Vector2d(position.position);
-            a.velocity.velocity = mouseWorld.sub(position.position, new Vector2d()).normalize().mul(1000);
-            a.create();
+        if (Input.mouseDown(0)) {
+            attacker.attack();
+        }
+        if (Input.keyJustPressed(GLFW_KEY_1)) {
+            attacker.attackCallback = this::doSwordSwing;
+        }
+        if (Input.keyJustPressed(GLFW_KEY_2)) {
+            attacker.attackCallback = this::doBowAttack;
+        }
+
+        Camera.camera.position.lerp(position.position, 1 - Math.exp(5 * -dt));
+    }
+
+    public void doBowAttack() {
+        Arrow a = new Arrow();
+        a.position.position = new Vector2d(position.position);
+        a.velocity.velocity = Input.mouseWorld().sub(position.position).normalize().mul(1000);
+        a.target = Monster.class;
+        a.create();
+
+        attacker.attackCooldownRemaining = .4;
+    }
+
+    public void doSwordSwing() {
+        SwordSwing ss = new SwordSwing();
+        ss.position.position = position.position;
+        ss.sprite.rotation = sprite.rotation;
+        ss.create();
+
+        Vector2d swingPos = Input.mouseWorld().sub(position.position).normalize().mul(30).add(position.position);
+        for (ColliderBehavior cb : physics.collider.allTouchingAt(swingPos)) {
+            Monster m = cb.getOrNull(Monster.class);
+            if (m != null) {
+                m.creature.hpCurrent -= 20;
+            }
+        }
+
+        attacker.attackCooldownRemaining = .3;
+    }
+
+    public static class SwordSwing extends Behavior {
+
+        public final PositionBehavior position = require(PositionBehavior.class);
+        public final SpriteBehavior sprite = require(SpriteBehavior.class);
+        public final LifetimeBehavior lifetime = require(LifetimeBehavior.class);
+
+        public Player player;
+
+        @Override
+        public void createInner() {
+            sprite.sprite = Sprite.load("slash6.png");
+            sprite.scale = 1;
+            lifetime.lifetime = .1;
         }
     }
 }

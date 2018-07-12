@@ -1,5 +1,6 @@
 package engine;
 
+import graphics.Camera;
 import java.util.BitSet;
 import opengl.Window;
 import org.joml.Vector2d;
@@ -76,5 +77,9 @@ public abstract class Input {
 
     public static double mouseWheel() {
         return mouseWheel;
+    }
+
+    public static Vector2d mouseWorld() {
+        return mouse().sub(Window.WIDTH / 2, Window.HEIGHT / 2).mul(1, -1).add(Camera.camera.position);
     }
 }
