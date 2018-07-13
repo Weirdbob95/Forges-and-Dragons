@@ -45,7 +45,7 @@ public class Sprite {
         1, 2, 3 // second Triangle
     };
 
-    private static final ShaderProgram spriteShader = Resources.loadShaderProgram("sprite");
+    static final ShaderProgram spriteShader = Resources.loadShaderProgram("sprite");
 
     private static final VertexArrayObject spriteVAO = VertexArrayObject.createVAO(() -> {
         BufferObject vbo = new BufferObject(GL_ARRAY_BUFFER, vertices);
@@ -56,9 +56,9 @@ public class Sprite {
         glEnableVertexAttribArray(1);
     });
 
-    private Texture texture;
-    private int width;
-    private int height;
+    Texture texture;
+    int width;
+    int height;
 
     private Sprite(String fileName) {
         try {

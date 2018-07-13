@@ -31,6 +31,20 @@ public abstract class Other {
         }.create();
     }
 
+    public static Behavior onTimer(double time, Runnable toRun) {
+        return new LifetimeBehavior() {
+            @Override
+            public void createInner() {
+                lifetime = time;
+            }
+
+            @Override
+            public void destroyInner() {
+                toRun.run();
+            }
+        }.create();
+    }
+
     public static Behavior onUpdate(double layer, Consumer<Double> toRun) {
         return new Behavior() {
             @Override

@@ -1,5 +1,6 @@
 package game;
 
+import static behaviors.Other.onTimer;
 import behaviors.PositionBehavior;
 import engine.Behavior;
 import game.attacks.Arrow;
@@ -30,12 +31,17 @@ public class AttackerBehavior extends Behavior {
         if (creature.stamina.pay(10)) {
             attackCooldownRemaining = 10 / (10 + creature.DEX);
 
-            Arrow a = new Arrow();
-            a.position.position = new Vector2d(position.position);
-            a.velocity.velocity = targetPos.sub(position.position).normalize().mul(1000);
-            a.attack.target = target;
-            a.attack.damage = (Math.random() + .5) * (10 + creature.STR);
-            a.create();
+            onTimer(attackCooldownRemaining / 2, () -> {
+                Arrow a = new Arrow();
+                a.position.position = new Vector2d(position.position);
+                a.velocity.velocity = targetPos.sub(position.position).normalize().mul(1000);
+                a.attack.target = target;
+                a.attack.damage = (Math.random() + .5) * (10 + creature.STR);
+                a.create();
+            });
+
+            creature.moveSpeed /= 2;
+            onTimer(attackCooldownRemaining, () -> creature.moveSpeed *= 2);
         }
     }
 
@@ -63,6 +69,9 @@ public class AttackerBehavior extends Behavior {
             ss.attack.target = target;
             ss.attack.damage = (Math.random() + .5) * (10 + creature.STR);
             ss.create();
+
+            creature.moveSpeed /= 2;
+            onTimer(attackCooldownRemaining / 2, () -> creature.moveSpeed *= 2);
         }
     }
 

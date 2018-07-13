@@ -27,6 +27,8 @@ public class Creature extends Behavior {
     public double POW = 10; // Magic power
     public double RES = 10; // Magic resilience
 
+    public double moveSpeed = 200;
+
     @Override
     public void createInner() {
         health.setColors(new Vector4d(.2, 1, 0, 1), new Vector4d(1, 0, 0, 1));

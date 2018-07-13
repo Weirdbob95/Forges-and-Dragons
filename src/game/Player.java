@@ -58,7 +58,7 @@ public class Player extends Behavior {
         if (goalVelocity.length() > 1) {
             goalVelocity.normalize();
         }
-        goalVelocity.mul(200);
+        goalVelocity.mul(attacker.creature.moveSpeed);
         if (Input.keyDown(GLFW_KEY_LEFT_SHIFT) && goalVelocity.length() > 0 && attacker.creature.stamina.pay(40 * dt)) {
             goalVelocity.mul(1.5);
         }

@@ -3,12 +3,14 @@ package game;
 import behaviors.PhysicsBehavior;
 import behaviors.PositionBehavior;
 import behaviors.SpaceOccupierBehavior;
+import behaviors.SpriteBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
 import static engine.Behavior.track;
 import graphics.Animation;
 import java.util.Collection;
 import org.joml.Vector2d;
+import org.joml.Vector4d;
 
 public class Monster extends Behavior {
 
@@ -17,7 +19,7 @@ public class Monster extends Behavior {
     public final PositionBehavior position = require(PositionBehavior.class);
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
     public final PhysicsBehavior physics = require(PhysicsBehavior.class);
-    public final Creature creature = require(Creature.class);
+    public final SpriteBehavior sprite = require(SpriteBehavior.class);
     public final FourDirAnimation fourDirAnimation = require(FourDirAnimation.class);
     public final AttackerBehavior attacker = require(AttackerBehavior.class);
     public final SpaceOccupierBehavior spaceOccupier = require(SpaceOccupierBehavior.class);
@@ -27,7 +29,18 @@ public class Monster extends Behavior {
         physics.collider.hitboxSize = new Vector2d(16, 24);
         fourDirAnimation.animation.animation = new Animation("skeleton_anim");
         attacker.target = Player.class;
-        attacker.attackCallback = attacker::doBowAttack;
+
+        double r = Math.random();
+        if (r < .4) {
+            attacker.attackCallback = attacker::doSwordSwingAttack;
+            sprite.color = new Vector4d(1, .9, .9, 1);
+        } else if (r < .8) {
+            attacker.attackCallback = attacker::doBowAttack;
+            sprite.color = new Vector4d(.9, 1, .9, 1);
+        } else {
+            attacker.attackCallback = attacker::doFireboltAttack;
+            sprite.color = new Vector4d(.9, .9, 1, 1);
+        }
     }
 
     @Override
@@ -38,7 +51,7 @@ public class Monster extends Behavior {
         if (player != null) {
             goalVelocity = player.position.position.sub(position.position, new Vector2d());
             goalVelocity.normalize();
-            goalVelocity.mul(100);
+            goalVelocity.mul(attacker.creature.moveSpeed);
 
             if (position.position.distance(player.position.position) < 500) {
                 attacker.attack(player.position.position);

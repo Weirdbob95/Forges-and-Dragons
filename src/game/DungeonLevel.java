@@ -1,7 +1,10 @@
 package game;
 
+import behaviors.RepeatedSpriteBehavior;
 import engine.Behavior;
-import java.util.LinkedList;
+import graphics.RepeatedSprite;
+import graphics.Sprite;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import org.joml.Vector2d;
@@ -9,31 +12,28 @@ import util.Noise;
 
 public class DungeonLevel extends Behavior {
 
-    private static final int SIZE = 50;
+    private static final int SIZE = 100;
+
+    public final RepeatedSpriteBehavior repeatedSprite = require(RepeatedSpriteBehavior.class);
 
     public Noise noise = new Noise(Math.random() * 1e6);
-    public List<Wall> walls = new LinkedList();
     public boolean[][] wallArray;
 
     @Override
     public void createInner() {
+        System.out.println("Generating level...");
         wallArray = new boolean[SIZE][SIZE];
+        List<Vector2d> wallPositions = new ArrayList();
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
                 wallArray[i][j] = (noise.perlin(i, j, .1) > .5);
-
-            }
-        }
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
                 if (wallArray[i][j]) {
-                    Wall w = new Wall();
-                    w.position.position = new Vector2d(i, j).mul(32);
-                    w.create();
-                    walls.add(w);
+                    wallPositions.add(new Vector2d(i, j));
                 }
             }
         }
+        repeatedSprite.repeatedSprite = new RepeatedSprite(Sprite.load("wall.png"), wallPositions);
+
         for (int i = 0; i < 10; i++) {
             placeObject(2, pos -> {
                 Monster m = new Monster();
@@ -41,11 +41,7 @@ public class DungeonLevel extends Behavior {
                 m.create();
             });
         }
-    }
-
-    @Override
-    public void destroyInner() {
-        walls.forEach(Wall::destroy);
+        System.out.println("Done!");
     }
 
     public void placeObject(int squares, Consumer<Vector2d> placeCallback) {
