@@ -8,15 +8,15 @@ import engine.Behavior;
 import engine.Input;
 import graphics.Animation;
 import graphics.Camera;
-import java.util.List;
 import org.joml.Vector2d;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_1;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_2;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_3;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
-import static util.MathUtils.direction;
 
 public class Player extends Behavior {
 
@@ -33,7 +33,7 @@ public class Player extends Behavior {
         fourDirAnimation.animation.animation = new Animation("skeleton_anim");
         fourDirAnimation.directionSupplier = () -> Input.mouseWorld().sub(position.position);
         fourDirAnimation.playAnimSupplier = () -> velocity.velocity.length() > 10;
-        attacker.attackCallback = this::doSwordSwing;
+        attacker.target = Monster.class;
     }
 
     @Override
@@ -55,47 +55,25 @@ public class Player extends Behavior {
             goalVelocity.normalize();
         }
         goalVelocity.mul(200);
-
+        if (Input.keyDown(GLFW_KEY_LEFT_SHIFT) && goalVelocity.length() > 0 && attacker.creature.stamina.pay(40 * dt)) {
+            goalVelocity.mul(1.5);
+        }
         double acceleration = 2000;
         velocity.velocity.lerp(goalVelocity, 1 - Math.exp(acceleration * -dt));
 
         if (Input.mouseDown(0)) {
-            attacker.attack();
+            attacker.attack(Input.mouseWorld());
         }
         if (Input.keyJustPressed(GLFW_KEY_1)) {
-            attacker.attackCallback = this::doSwordSwing;
+            attacker.attackCallback = attacker::doSwordSwingAttack;
         }
         if (Input.keyJustPressed(GLFW_KEY_2)) {
-            attacker.attackCallback = this::doBowAttack;
+            attacker.attackCallback = attacker::doBowAttack;
+        }
+        if (Input.keyJustPressed(GLFW_KEY_3)) {
+            attacker.attackCallback = attacker::doFireboltAttack;
         }
 
         Camera.camera.position.lerp(position.position, 1 - Math.exp(5 * -dt));
-    }
-
-    public void doBowAttack() {
-        Arrow a = new Arrow();
-        a.position.position = new Vector2d(position.position);
-        a.velocity.velocity = Input.mouseWorld().sub(position.position).normalize().mul(1000);
-        a.target = Monster.class;
-        a.create();
-
-        attacker.attackCooldownRemaining = .4;
-    }
-
-    public void doSwordSwing() {
-        SwordSwing ss = new SwordSwing();
-        ss.position.position = position.position;
-        ss.sprite.rotation = direction(Input.mouseWorld().sub(position.position));
-        ss.create();
-
-        Vector2d swingPos = Input.mouseWorld().sub(position.position).normalize().mul(30).add(position.position);
-        ss.attack((List) physics.collider.allTouchingAt(swingPos));
-//        for (ColliderBehavior cb : physics.collider.allTouchingAt(swingPos)) {
-//            Monster m = cb.getOrNull(Monster.class);
-//            if (m != null) {
-//                m.creature.hpCurrent -= 20;
-//            }
-//        }
-        attacker.attackCooldownRemaining = .3;
     }
 }

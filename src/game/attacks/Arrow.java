@@ -1,4 +1,4 @@
-package game;
+package game.attacks;
 
 import behaviors.AnimationBehavior;
 import behaviors.ColliderBehavior;
@@ -7,6 +7,7 @@ import behaviors.PositionBehavior;
 import behaviors.SpriteBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
+import game.AttackBehavior;
 import graphics.Animation;
 import graphics.Sprite;
 import org.joml.Vector2d;
@@ -19,8 +20,7 @@ public class Arrow extends Behavior {
     public final ColliderBehavior collider = require(ColliderBehavior.class);
     public final SpriteBehavior sprite = require(SpriteBehavior.class);
     public final LifetimeBehavior lifetime = require(LifetimeBehavior.class);
-
-    public Class<? extends Behavior> target = null;
+    public final AttackBehavior attack = require(AttackBehavior.class);
 
     @Override
     public void createInner() {
@@ -42,10 +42,10 @@ public class Arrow extends Behavior {
         if (collider.solidCollision()) {
             destroy();
         }
-        Behavior b = collider.findTouching(target);
+        Behavior b = collider.findTouching(attack.target);
         if (b != null) {
+            attack.hit(b);
             destroy();
-            b.get(Creature.class).hpCurrent -= 10;
         }
     }
 

@@ -78,8 +78,8 @@ public abstract class Behavior {
         destroyInner();
     }
 
-    public static <T extends Behavior> T findRoot(Class<T> c) {
-        return (T) ALL_BEHAVIORS.stream().filter(c::isInstance).filter(b -> b.isRoot()).findAny().get();
+    public static <T extends Behavior> T findRootOrNull(Class<T> c) {
+        return (T) ALL_BEHAVIORS.stream().filter(c::isInstance).filter(b -> b.isRoot()).findAny().orElse(null);
     }
 
     public final <T extends Behavior> T get(Class<T> c) {

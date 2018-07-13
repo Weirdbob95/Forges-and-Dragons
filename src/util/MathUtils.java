@@ -24,4 +24,8 @@ public class MathUtils {
         return new Vector2d(Math.cos(angle) * v.x - Math.sin(angle) * v.y,
                 Math.sin(angle) * v.x + Math.cos(angle) * v.y);
     }
+
+    public static Vector2d unitVector(double angle) {
+        return rotate(new Vector2d(1, 0), angle);
+    }
 }

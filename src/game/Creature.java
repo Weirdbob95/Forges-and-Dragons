@@ -4,10 +4,9 @@ import behaviors.PositionBehavior;
 import behaviors.SpriteBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
-import graphics.Graphics;
+import game.stats.StatBar;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
-import static util.MathUtils.clamp;
 
 public class Creature extends Behavior {
 
@@ -15,21 +14,29 @@ public class Creature extends Behavior {
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
     public final SpriteBehavior sprite = require(SpriteBehavior.class);
 
-    public double hpMax = 100;
-    public double hpCurrent = 100;
-    public double mpMax = 100;
-    public double mpCurrent = 100;
-    public double spMax = 100;
-    public double spCurrent = 100;
+    public StatBar health = new StatBar(100);
+    public StatBar mana = new StatBar(100);
+    public StatBar stamina = new StatBar(100);
 
-    public double STR = 10;
-    public double AGI = 10;
-    public double DEX = 10;
-    public double RES = 10;
-    public double INT = 10;
-    public double WIS = 10;
-    public double CHA = 10;
-    public double LUK = 10;
+    public double STR = 10; // Attack damage
+    public double DEX = 10; // Attack speed
+    public double AGI = 10; // Movement speed
+    public double CON = 10; // Health and stamina
+    public double INT = 10; // Mana capacity
+    public double WIS = 10; // Mana regen
+    public double POW = 10; // Magic power
+    public double RES = 10; // Magic resilience
+
+    @Override
+    public void createInner() {
+        health.setColors(new Vector4d(.2, 1, 0, 1), new Vector4d(1, 0, 0, 1));
+
+        mana.setColors(new Vector4d(0, .6, 1, 1), new Vector4d(0, .5, 1, 1));
+        mana.regen = 2;
+
+        stamina.setColors(new Vector4d(1, .8, 0, 1), new Vector4d(.5, .4, 0, 1));
+        stamina.regen = 10;
+    }
 
     public void die() {
         getRoot().destroy();
@@ -37,15 +44,17 @@ public class Creature extends Behavior {
 
     @Override
     public void render() {
-        double healthBarPerc = clamp(hpCurrent / hpMax, 0, 1);
-        Graphics.drawRectangle(new Vector2d(-20, 20).add(position.position), 0, new Vector2d(40, 5), new Vector4d(1, 0, 0, 1));
-        Graphics.drawRectangle(new Vector2d(-20, 20).add(position.position), 0, new Vector2d(40 * healthBarPerc, 5), new Vector4d(0, 1, 0, 1));
-        Graphics.drawRectangleOutline(new Vector2d(-20, 20).add(position.position), 0, new Vector2d(40, 5), new Vector4d(0, 0, 0, 1));
+        health.draw(new Vector2d(0, 30).add(position.position));
+        mana.draw(new Vector2d(0, 25).add(position.position));
+        stamina.draw(new Vector2d(0, 20).add(position.position));
     }
 
     @Override
     public void update(double dt) {
-        if (hpCurrent <= 1e-9) {
+        health.update(dt);
+        mana.update(dt);
+        stamina.update(dt);
+        if (health.isEmpty()) {
             die();
         }
     }
