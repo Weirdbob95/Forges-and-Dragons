@@ -3,9 +3,10 @@ package engine;
 import behaviors.Other.FPSBehavior;
 import static behaviors.Other.onRender;
 import static behaviors.Other.onUpdate;
+import game.DungeonLevel;
 import game.Monster;
 import game.Player;
-import game.Wall;
+import graphics.Camera;
 import org.joml.Vector2d;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_M;
@@ -27,13 +28,20 @@ public abstract class Main {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         });
 
-        new Player().create();
+        Player p = new Player();
+        p.position.position = new Vector2d(-50, -50);
+        p.create();
 
-        for (int i = 0; i < 10; i++) {
-            Wall w = new Wall();
-            w.position.position = new Vector2d(80, 32 * i);
-            w.create();
-        }
+//        for (int i = 0; i < 10; i++) {
+//            Wall w = new Wall();
+//            w.position.position = new Vector2d(80, 32 * i);
+//            w.create();
+//        }
+        new DungeonLevel().create();
+
+        onUpdate(0, dt -> {
+            Camera.camera.zoom *= Math.pow(1.1, Input.mouseWheel());
+        });
 
         onUpdate(0, dt -> {
             if (Input.keyJustPressed(GLFW_KEY_M)) {

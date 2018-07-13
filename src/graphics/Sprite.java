@@ -11,6 +11,7 @@ import opengl.ShaderProgram;
 import opengl.Texture;
 import opengl.VertexArrayObject;
 import org.joml.Vector2d;
+import org.joml.Vector4d;
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
@@ -70,9 +71,10 @@ public class Sprite {
         }
     }
 
-    public void draw(Vector2d position, double rotation, double scale) {
+    public void draw(Vector2d position, double rotation, double scale, Vector4d color) {
         spriteShader.setUniform("projectionMatrix", Camera.getProjectionMatrix());
         spriteShader.setUniform("modelViewMatrix", Camera.camera.getWorldMatrix(position, rotation, scale * width, scale * height));
+        spriteShader.setUniform("color", color);
         using(Arrays.asList(texture, spriteShader, spriteVAO), () -> {
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         });

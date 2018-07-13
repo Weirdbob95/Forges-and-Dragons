@@ -7,8 +7,10 @@ import behaviors.SpriteBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
 import game.AttackBehavior;
+import game.attacks.Arrow.ArrowTwinkle;
 import graphics.Sprite;
 import org.joml.Vector2d;
+import org.joml.Vector4d;
 import static util.MathUtils.direction;
 
 public class Firebolt extends Behavior {
@@ -31,9 +33,10 @@ public class Firebolt extends Behavior {
 
     @Override
     public void destroyInner() {
-//        ArrowTwinkle at = new ArrowTwinkle();
-//        at.position.position = new Vector2d(position.position);
-//        at.create();
+        ArrowTwinkle at = new ArrowTwinkle();
+        at.position.position = new Vector2d(position.position);
+        at.animation.sprite.color = new Vector4d(1, .2, 0, 1);
+        at.create();
     }
 
     @Override
