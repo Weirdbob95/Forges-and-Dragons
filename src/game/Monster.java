@@ -5,10 +5,14 @@ import behaviors.PositionBehavior;
 import behaviors.SpaceOccupierBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
+import static engine.Behavior.track;
 import graphics.Animation;
+import java.util.Collection;
 import org.joml.Vector2d;
 
 public class Monster extends Behavior {
+
+    private static final Collection<Player> ALL_PLAYERS = track(Player.class);
 
     public final PositionBehavior position = require(PositionBehavior.class);
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
@@ -30,7 +34,7 @@ public class Monster extends Behavior {
     public void update(double dt) {
         Vector2d goalVelocity;
 
-        Player player = Behavior.findRootOrNull(Player.class);
+        Player player = ALL_PLAYERS.stream().findAny().orElse(null);
         if (player != null) {
             goalVelocity = player.position.position.sub(position.position, new Vector2d());
             goalVelocity.normalize();

@@ -13,13 +13,17 @@ public class DungeonLevel extends Behavior {
 
     @Override
     public void createInner() {
-        for (int i = 0; i < 100; i++) {
-            for (int j = 0; j < 100; j++) {
+        for (int i = 0; i < 50; i++) {
+            for (int j = 0; j < 50; j++) {
                 if (noise.perlin(i, j, .1) > .5) {
                     Wall w = new Wall();
                     w.position.position = new Vector2d(i, j).mul(32);
                     w.create();
                     walls.add(w);
+                } else if (Math.random() < .005) {
+                    Monster m = new Monster();
+                    m.position.position = new Vector2d(i, j).mul(32);
+                    m.create();
                 }
             }
         }

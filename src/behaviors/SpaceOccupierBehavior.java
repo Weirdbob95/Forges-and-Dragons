@@ -1,9 +1,13 @@
 package behaviors;
 
 import engine.Behavior;
+import static engine.Behavior.track;
+import java.util.Collection;
 import org.joml.Vector2d;
 
 public class SpaceOccupierBehavior extends Behavior {
+
+    private static final Collection<SpaceOccupierBehavior> ALL_SPACE_OCCUPIERS = track(SpaceOccupierBehavior.class);
 
     public final PositionBehavior position = require(PositionBehavior.class);
 
@@ -12,7 +16,7 @@ public class SpaceOccupierBehavior extends Behavior {
 
     @Override
     public void update(double dt) {
-        for (SpaceOccupierBehavior other : getAllOfType(SpaceOccupierBehavior.class)) {
+        for (SpaceOccupierBehavior other : ALL_SPACE_OCCUPIERS) {
             if (other != this) {
                 Vector2d delta = other.position.position.sub(position.position, new Vector2d());
                 double distance = delta.length();

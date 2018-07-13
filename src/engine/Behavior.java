@@ -3,11 +3,11 @@ package engine;
 import static engine.Core.MAIN_THREAD;
 import static engine.Core.onMainThread;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class Behavior {
 
-    private static final Collection<Behavior> ALL _BEHAVIORS  = new HashSet();
+//    private static final Collection<Behavior> ALL_BEHAVIORS = new HashSet();
+    private static final Map<Class<? extends Behavior>, Collection<Behavior>> TRACKED_BEHAVIORS = new HashMap();
     private static final SortedSet<Behavior> RENDER_ORDER = new TreeSet(Comparator.comparingDouble(Behavior::renderLayer).thenComparingInt(b -> b.id));
     private static final SortedSet<Behavior> UPDATE_ORDER = new TreeSet(Comparator.comparingDouble(Behavior::updateLayer).thenComparingInt(b -> b.id));
 
@@ -46,12 +46,13 @@ public abstract class Behavior {
         for (Behavior b : subBehaviors.values()) {
             b.createActual();
         }
-        //createActual();
         return this;
     }
 
     private void createActual() {
-        ALL_BEHAVIORS.add(this);
+        if (TRACKED_BEHAVIORS.containsKey(getClass())) {
+            TRACKED_BEHAVIORS.get(getClass()).add(this);
+        }
         RENDER_ORDER.add(this);
         UPDATE_ORDER.add(this);
         createInner();
@@ -68,18 +69,15 @@ public abstract class Behavior {
         for (Behavior b : subBehaviors.values()) {
             b.destroyActual();
         }
-        //destroyActual();
     }
 
     private void destroyActual() {
-        ALL_BEHAVIORS.remove(this);
+        if (TRACKED_BEHAVIORS.containsKey(getClass())) {
+            TRACKED_BEHAVIORS.get(getClass()).remove(this);
+        }
         RENDER_ORDER.remove(this);
         UPDATE_ORDER.remove(this);
         destroyInner();
-    }
-
-    public static <T extends Behavior> T findRootOrNull(Class<T> c) {
-        return (T) ALL_BEHAVIORS.stream().filter(c::isInstance).filter(b -> b.isRoot()).findAny().orElse(null);
     }
 
     public final <T extends Behavior> T get(Class<T> c) {
@@ -89,16 +87,6 @@ public abstract class Behavior {
         } else {
             throw new RuntimeException("Behavior not found: " + c.getSimpleName());
         }
-    }
-
-    public static Collection<Behavior> getAll() {
-        return new LinkedList<>(ALL_BEHAVIORS);
-    }
-
-    public static <T extends Behavior> Collection<T> getAllOfType(Class<T> c) {
-        return (Collection) getAll().stream()
-                .filter(c::isInstance)
-                .collect(Collectors.toList());
     }
 
     public static Collection<Behavior> getAllRenderOrder() {
@@ -146,6 +134,13 @@ public abstract class Behavior {
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new RuntimeException("Behavior does not have an empty public constructor: " + c.getSimpleName());
         }
+    }
+
+    public static <T extends Behavior> Collection<T> track(Class<T> c) {
+        if (!TRACKED_BEHAVIORS.containsKey(c)) {
+            TRACKED_BEHAVIORS.put(c, new HashSet());
+        }
+        return (Collection) TRACKED_BEHAVIORS.get(c);
     }
 
     // Overridable functions

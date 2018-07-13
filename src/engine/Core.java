@@ -50,7 +50,7 @@ public abstract class Core {
             Behavior.getAllUpdateOrder().forEach(b -> b.update(dt));
             Behavior.getAllRenderOrder().forEach(b -> b.render());
         }
-        Behavior.getAll().stream().filter(b -> b.isRoot()).forEach(b -> b.destroy());
+        //Behavior.getAll().stream().filter(b -> b.isRoot()).forEach(b -> b.destroy());
         Window.cleanupGLFW();
         System.exit(0);
     }

@@ -20,6 +20,10 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 
 public class Player extends Behavior {
 
+    static {
+        track(Player.class);
+    }
+
     public final PositionBehavior position = require(PositionBehavior.class);
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
     public final PhysicsBehavior physics = require(PhysicsBehavior.class);
