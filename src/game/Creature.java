@@ -18,15 +18,14 @@ public class Creature extends Behavior {
     public StatBar mana = new StatBar(100);
     public StatBar stamina = new StatBar(100);
 
-    public double STR = 10; // Attack damage
-    public double DEX = 10; // Attack speed
-    public double AGI = 10; // Movement speed
-    public double CON = 10; // Health and stamina
-    public double INT = 10; // Mana capacity
-    public double WIS = 10; // Mana regen
-    public double POW = 10; // Magic power
-    public double RES = 10; // Magic resilience
-
+//    public double STR = 10; // Attack damage
+//    public double DEX = 10; // Attack speed
+//    public double AGI = 10; // Movement speed
+//    public double CON = 10; // Health and stamina
+//    public double INT = 10; // Mana capacity
+//    public double WIS = 10; // Mana regen
+//    public double POW = 10; // Magic power
+//    public double RES = 10; // Magic resilience
     public double moveSpeed = 200;
 
     @Override

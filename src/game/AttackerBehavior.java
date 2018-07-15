@@ -1,14 +1,10 @@
 package game;
 
-import static behaviors.Other.onTimer;
 import behaviors.PositionBehavior;
 import engine.Behavior;
-import game.attacks.Arrow;
-import game.attacks.Firebolt;
-import game.attacks.SwordSwing;
-import java.util.function.Consumer;
+import graphics.Graphics;
 import org.joml.Vector2d;
-import static util.MathUtils.direction;
+import org.joml.Vector4d;
 
 public class AttackerBehavior extends Behavior {
 
@@ -16,67 +12,82 @@ public class AttackerBehavior extends Behavior {
     public final Creature creature = require(Creature.class);
 
     public Class<? extends Behavior> target = null;
-    public Consumer<Vector2d> attackCallback = this::doSwordSwingAttack;
+    public Vector2d targetPos = null;
+    private AttackType attackType = null;
+
+    public boolean charging = false;
+    private boolean attackWhenReady = false;
     public double attackCooldownRemaining = 0;
 
-    public void attack(Vector2d targetPos) {
-        if (attackCooldownRemaining <= 0) {
-            if (attackCallback != null) {
-                attackCallback.accept(new Vector2d(targetPos));
+    public void attackWhenReady() {
+        if (charging) {
+            attackWhenReady = true;
+        }
+    }
+
+    @Override
+    public void render() {
+        if (charging) {
+            double percFull = attackType.charge / attackType.minCharge();
+            Vector4d barColor = new Vector4d(1, 1, 1, 1);
+            if (attackType.charge == attackType.maxCharge()) {
+                percFull = 1;
+                barColor = new Vector4d(1, 0, 0, 1);
+            } else if (attackType.charge > attackType.minCharge()) {
+                percFull = (attackType.charge - attackType.minCharge()) / (attackType.maxCharge() - attackType.minCharge());
+                barColor = new Vector4d(1, 1 - percFull, 0, 1);
+            }
+
+            Graphics.drawRectangle(new Vector2d(-20, -20).add(position.position), 0, new Vector2d(40, 5), new Vector4d(0, 0, 0, 1));
+            Graphics.drawRectangle(new Vector2d(-20, -20).add(position.position), 0, new Vector2d(40 * percFull, 5), barColor);
+            Graphics.drawRectangleOutline(new Vector2d(-20, -20).add(position.position), 0, new Vector2d(40, 5), new Vector4d(0, 0, 0, 1));
+        }
+    }
+
+    @Override
+    public double renderLayer() {
+        return 1;
+    }
+
+    public void setAttackType(AttackType attackType) {
+        this.attackType = attackType;
+        attackType.attacker = this;
+    }
+
+    public void startAttack() {
+        if (attackCooldownRemaining <= 0 && !charging && attackType != null) {
+            if (attackType.payInitialCost()) {
+                charging = true;
+                attackType.charge = 0;
+                creature.moveSpeed *= attackType.slowdown();
             }
         }
     }
 
-    public void doBowAttack(Vector2d targetPos) {
-        if (creature.stamina.pay(10)) {
-            attackCooldownRemaining = 10 / (10 + creature.DEX);
-
-            onTimer(attackCooldownRemaining / 2, () -> {
-                Arrow a = new Arrow();
-                a.position.position = new Vector2d(position.position);
-                a.velocity.velocity = targetPos.sub(position.position).normalize().mul(1000);
-                a.attack.target = target;
-                a.attack.damage = (Math.random() + .5) * (10 + creature.STR);
-                a.create();
-            });
-
-            creature.moveSpeed /= 2;
-            onTimer(attackCooldownRemaining, () -> creature.moveSpeed *= 2);
-        }
-    }
-
-    public void doFireboltAttack(Vector2d targetPos) {
-        if (creature.mana.pay(20)) {
-            attackCooldownRemaining = .5;
-
-            Firebolt f = new Firebolt();
-            f.position.position = new Vector2d(position.position);
-            f.velocity.velocity = targetPos.sub(position.position).normalize().mul(600);
-            f.attack.target = target;
-            f.attack.damage = (Math.random() + .5) * (10 + creature.POW) * 2;
-            f.create();
-        }
-    }
-
-    public void doSwordSwingAttack(Vector2d targetPos) {
-        if (creature.stamina.pay(10)) {
-            attackCooldownRemaining = 10 / (10 + creature.DEX);
-
-            SwordSwing ss = new SwordSwing();
-            ss.position.position = position.position;
-            ss.sprite.rotation = direction(targetPos.sub(position.position));
-            ss.lifetime.lifetime = Math.min(.1, attackCooldownRemaining / 2);
-            ss.attack.target = target;
-            ss.attack.damage = (Math.random() + .5) * (10 + creature.STR);
-            ss.create();
-
-            creature.moveSpeed /= 2;
-            onTimer(attackCooldownRemaining / 2, () -> creature.moveSpeed *= 2);
+    public void stopAttack() {
+        if (charging) {
+            charging = false;
+            attackWhenReady = false;
+            attackCooldownRemaining = attackType.cooldown();
+            creature.moveSpeed /= attackType.slowdown();
         }
     }
 
     @Override
     public void update(double dt) {
         attackCooldownRemaining -= dt;
+        if (charging) {
+            if (attackType.charge < attackType.maxCharge()) {
+                if (attackType.payChargeCost(dt)) {
+                    attackType.charge = Math.min(attackType.charge + dt, attackType.maxCharge());
+                }
+            } else if (attackType.fireAtMaxCharge()) {
+                attackWhenReady();
+            }
+            if (attackWhenReady && attackType.charge >= attackType.minCharge()) {
+                attackType.attack();
+                stopAttack();
+            }
+        }
     }
 }

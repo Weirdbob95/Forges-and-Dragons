@@ -32,10 +32,10 @@ public class RepeatedSprite {
             float x = (float) positions.get(i).x;
             float y = (float) positions.get(i).y;
             System.arraycopy(new float[]{
-                x + 0.5f, y + 0.5f, 0.0f, 1.0f, 0.0f, // top right
-                x + 0.5f, y - 0.5f, 0.0f, 1.0f, 1.0f, // bottom right
-                x - 0.5f, y - 0.5f, 0.0f, 0.0f, 1.0f, // bottom left
-                x - 0.5f, y + 0.5f, 0.0f, 0.0f, 0.0f // top left
+                x + 1, y + 1, 0, 1, 0, // top right
+                x + 1, y, 0, 1, 1, // bottom right
+                x, y, 0, 0, 1, // bottom left
+                x, y + 1, 0, 0, 0 // top left
             }, 0, vertices, 20 * i, 20);
             System.arraycopy(new int[]{
                 4 * i, 4 * i + 1, 4 * i + 3, // first Triangle

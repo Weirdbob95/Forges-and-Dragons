@@ -1,11 +1,15 @@
 package game;
 
+import behaviors.ColliderBehavior;
 import behaviors.PhysicsBehavior;
 import behaviors.PositionBehavior;
 import behaviors.SpaceOccupierBehavior;
 import behaviors.VelocityBehavior;
 import engine.Behavior;
 import engine.Input;
+import game.attacktypes.AT_Arrow;
+import game.attacktypes.AT_Firebolt;
+import game.attacktypes.AT_SwordSwing;
 import graphics.Animation;
 import graphics.Camera;
 import org.joml.Vector2d;
@@ -33,11 +37,12 @@ public class Player extends Behavior {
 
     @Override
     public void createInner() {
-        physics.collider.hitboxSize = new Vector2d(24, 24);
+        physics.collider.collisionShape = new ColliderBehavior.Rectangle(position, new Vector2d(16, 24));
         fourDirAnimation.animation.animation = new Animation("skeleton_anim");
         fourDirAnimation.directionSupplier = () -> Input.mouseWorld().sub(position.position);
         fourDirAnimation.playAnimSupplier = () -> velocity.velocity.length() > 10;
         attacker.target = Monster.class;
+        attacker.setAttackType(new AT_SwordSwing());
     }
 
     @Override
@@ -60,22 +65,26 @@ public class Player extends Behavior {
         }
         goalVelocity.mul(attacker.creature.moveSpeed);
         if (Input.keyDown(GLFW_KEY_LEFT_SHIFT) && goalVelocity.length() > 0 && attacker.creature.stamina.pay(40 * dt)) {
-            goalVelocity.mul(1.5);
+            goalVelocity.mul(2);
         }
         double acceleration = 2000;
         velocity.velocity.lerp(goalVelocity, 1 - Math.exp(acceleration * -dt));
 
-        if (Input.mouseDown(0)) {
-            attacker.attack(Input.mouseWorld());
+        attacker.targetPos = Input.mouseWorld();
+        if (Input.mouseJustPressed(0)) {
+            attacker.startAttack();
+        }
+        if (Input.mouseJustReleased(0)) {
+            attacker.attackWhenReady();
         }
         if (Input.keyJustPressed(GLFW_KEY_1)) {
-            attacker.attackCallback = attacker::doSwordSwingAttack;
+            attacker.setAttackType(new AT_SwordSwing());
         }
         if (Input.keyJustPressed(GLFW_KEY_2)) {
-            attacker.attackCallback = attacker::doBowAttack;
+            attacker.setAttackType(new AT_Arrow());
         }
         if (Input.keyJustPressed(GLFW_KEY_3)) {
-            attacker.attackCallback = attacker::doFireboltAttack;
+            attacker.setAttackType(new AT_Firebolt());
         }
 
         Camera.camera.position.lerp(position.position, 1 - Math.exp(5 * -dt));

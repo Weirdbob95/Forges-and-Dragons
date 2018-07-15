@@ -1,5 +1,7 @@
 package game;
 
+import behaviors.ColliderBehavior;
+import behaviors.ColliderBehavior.RectangleGrid;
 import behaviors.RepeatedSpriteBehavior;
 import engine.Behavior;
 import graphics.RepeatedSprite;
@@ -12,9 +14,10 @@ import util.Noise;
 
 public class DungeonLevel extends Behavior {
 
-    private static final int SIZE = 100;
+    private static final int SIZE = 50;
 
     public final RepeatedSpriteBehavior repeatedSprite = require(RepeatedSpriteBehavior.class);
+    public final ColliderBehavior collider = require(ColliderBehavior.class);
 
     public Noise noise = new Noise(Math.random() * 1e6);
     public boolean[][] wallArray;
@@ -41,6 +44,9 @@ public class DungeonLevel extends Behavior {
                 m.create();
             });
         }
+
+        collider.collisionShape = new RectangleGrid(collider.position, wallArray, new Vector2d(32, 32));
+        collider.setSolid(true);
         System.out.println("Done!");
     }
 

@@ -6,7 +6,6 @@ import java.util.*;
 
 public abstract class Behavior {
 
-//    private static final Collection<Behavior> ALL_BEHAVIORS = new HashSet();
     private static final Map<Class<? extends Behavior>, Collection<Behavior>> TRACKED_BEHAVIORS = new HashMap();
     private static final SortedSet<Behavior> RENDER_ORDER = new TreeSet(Comparator.comparingDouble(Behavior::renderLayer).thenComparingInt(b -> b.id));
     private static final SortedSet<Behavior> UPDATE_ORDER = new TreeSet(Comparator.comparingDouble(Behavior::updateLayer).thenComparingInt(b -> b.id));
