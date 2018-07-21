@@ -52,6 +52,8 @@ public class Monster extends Behavior {
             sprite.color = new Vector4d(.9, .9, 1, 1);
             attackRange = 500;
         }
+
+        //attacker.creature.moveSpeed = 50;
     }
 
     @Override

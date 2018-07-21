@@ -11,6 +11,11 @@ public class PreviousPositionBehavior extends Behavior {
     public Vector2d prevPos = new Vector2d();
 
     @Override
+    public void createInner() {
+        prevPos = new Vector2d(position.position);
+    }
+
+    @Override
     public void update(double dt) {
         prevPos = new Vector2d(position.position);
     }
