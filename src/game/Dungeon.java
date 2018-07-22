@@ -21,12 +21,13 @@ public class Dungeon extends Behavior {
         List<Vector2d> wallPositions = new ArrayList();
         for (int i = 0; i < wallArray.length; i++) {
             for (int j = 0; j < wallArray[0].length; j++) {
-                if (wallArray[i][j]) {
+                if (!wallArray[i][j]) {
                     wallPositions.add(new Vector2d(i, j));
                 }
             }
         }
-        repeatedSprite.repeatedSprite = new RepeatedSprite(Sprite.load("bigwall.png"), wallPositions);
+        repeatedSprite.repeatedSprite = new RepeatedSprite(Sprite.load("stone_brick.png"), wallPositions);
+        repeatedSprite.scale = 2;
         collider.collisionShape = new ColliderBehavior.RectangleGrid(collider.position, wallArray, new Vector2d(64));
         collider.setSolid(true);
     }

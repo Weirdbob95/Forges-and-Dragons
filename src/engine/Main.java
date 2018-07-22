@@ -24,18 +24,18 @@ public abstract class Main {
         });
 
         onRender(-10, () -> {
-            glClearColor(0.8f, 0.8f, 0.8f, 1);
+            glClearColor(0.2f, 0.2f, 0.2f, 1);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         });
 
+        new DungeonGenerator().createLevel(1000, 1000);
+
         Player p = new Player();
-        p.position.position = new Vector2d(-50, -50);
+        p.position.position = new Vector2d(0, 0);
         p.create();
 
-        new DungeonGenerator().createLevel(20, 20);
-
         onUpdate(0, dt -> {
-            Camera.camera.zoom *= Math.pow(1.1, Input.mouseWheel());
+            Camera.camera.zoom *= Math.pow(2, Input.mouseWheel());
         });
 
         onUpdate(0, dt -> {

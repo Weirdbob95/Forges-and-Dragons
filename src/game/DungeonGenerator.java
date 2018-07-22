@@ -1,5 +1,6 @@
 package game;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -21,13 +22,14 @@ public class DungeonGenerator {
     public void createLevel(int numRooms, int numMonsters) {
         for (int i = 0; i < numRooms; i++) {
             DungeonRoom room = placeRoom();
-            if (numRooms >= 100) {
+            if (numRooms > 100) {
                 System.out.println("Placed room number " + i);
             }
             if (i > 0) {
-                IntPair door = connectRoom(room, null);
+                List<IntPair> doors = new ArrayList();
+                doors.add(connectRoom(room, doors));
                 while (Math.random() < .5) {
-                    connectRoom(room, door);
+                    doors.add(connectRoom(room, doors));
                 }
             }
         }
@@ -62,7 +64,7 @@ public class DungeonGenerator {
         }
     }
 
-    public IntPair connectRoom(DungeonRoom room, IntPair avoid) {
+    public IntPair connectRoom(DungeonRoom room, List<IntPair> avoid) {
         IntPair start = new IntPair(room.x, room.y);
         Map<IntPair, Double> cost = new HashMap();
         cost.put(start, 0.);
@@ -82,12 +84,12 @@ public class DungeonGenerator {
             }
             for (IntPair n : neighbors(ip)) {
                 double newCost = cost.get(ip);
-                if (avoid == null) {
+                if (avoid.isEmpty()) {
                     newCost += squareAt(n).cost();
-                } else if (n.equals(avoid)) {
+                } else if (avoid.contains(n)) {
                     newCost += squareAt(n).cost() + 10000;
                 } else {
-                    newCost += squareAt(n).cost() / n.distance(avoid);
+                    newCost += squareAt(n).cost() / minDistance(n, avoid);
                 }
 
                 if (!cost.containsKey(n) || cost.get(n) > newCost) {
@@ -99,6 +101,10 @@ public class DungeonGenerator {
             }
         }
         return null;
+    }
+
+    public double minDistance(IntPair pos, List<IntPair> list) {
+        return list.stream().mapToDouble(pos::distance).min().getAsDouble();
     }
 
     public List<IntPair> neighbors(IntPair ip) {

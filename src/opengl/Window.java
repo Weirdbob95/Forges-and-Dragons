@@ -16,8 +16,8 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
 
-    public static final int WIDTH = 1200;
-    public static final int HEIGHT = 800;
+    public static final int WIDTH = 1800;
+    public static final int HEIGHT = 1200;
     public static Window window;
 
     public static void initGLFW() {
