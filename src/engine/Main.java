@@ -28,7 +28,7 @@ public abstract class Main {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         });
 
-        new DungeonGenerator().createLevel(1000, 1000);
+        new DungeonGenerator().createLevel(100, 100);
 
         Player p = new Player();
         p.position.position = new Vector2d(0, 0);
