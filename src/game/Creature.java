@@ -10,6 +10,10 @@ import org.joml.Vector4d;
 
 public class Creature extends Behavior {
 
+    static {
+        track(Creature.class);
+    }
+
     public final PositionBehavior position = require(PositionBehavior.class);
     public final VelocityBehavior velocity = require(VelocityBehavior.class);
     public final SpriteBehavior sprite = require(SpriteBehavior.class);
@@ -26,7 +30,7 @@ public class Creature extends Behavior {
 //    public double WIS = 10; // Mana regen
 //    public double POW = 10; // Magic power
 //    public double RES = 10; // Magic resilience
-    public double moveSpeed = 200;
+    public double moveSpeed = 150;
 
     @Override
     public void createInner() {

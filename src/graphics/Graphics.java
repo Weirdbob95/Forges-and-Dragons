@@ -7,12 +7,7 @@ import opengl.ShaderProgram;
 import opengl.VertexArrayObject;
 import org.joml.Vector2d;
 import org.joml.Vector4d;
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_LINES;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
-import static org.lwjgl.opengl.GL11.glDrawElements;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
@@ -25,6 +20,21 @@ public class Graphics {
 
     private static final ShaderProgram colorShader = Resources.loadShaderProgram("color");
 
+    private static final int CIRCLE_DETAIL = 20;
+    private static final float circleVertices[] = new float[CIRCLE_DETAIL * 3 + 6];
+
+    static {
+        for (int i = 0; i <= CIRCLE_DETAIL; i++) {
+            circleVertices[3 * i + 3] = (float) Math.cos(i * 2 * Math.PI / CIRCLE_DETAIL);
+            circleVertices[3 * i + 4] = (float) Math.sin(i * 2 * Math.PI / CIRCLE_DETAIL);
+        }
+    }
+    private static final VertexArrayObject circleVAO = VertexArrayObject.createVAO(() -> {
+        BufferObject vbo = new BufferObject(GL_ARRAY_BUFFER, circleVertices);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 12, 0);
+        glEnableVertexAttribArray(0);
+    });
+
     private static final float lineVertices[] = {
         0, 0, 0,
         1, 0, 0
@@ -34,6 +44,15 @@ public class Graphics {
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 12, 0);
         glEnableVertexAttribArray(0);
     });
+
+    public static void drawCircle(Vector2d center, double size, Vector4d color) {
+        colorShader.setUniform("projectionMatrix", Camera.getProjectionMatrix());
+        colorShader.setUniform("modelViewMatrix", Camera.camera.getWorldMatrix(center, 0, size, size));
+        colorShader.setUniform("color", color);
+        using(Arrays.asList(colorShader, circleVAO), () -> {
+            glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_DETAIL + 2);
+        });
+    }
 
     public static void drawLine(Vector2d p1, Vector2d p2, Vector4d color) {
         Vector2d delta = p2.sub(p1, new Vector2d());

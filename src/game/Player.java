@@ -1,26 +1,22 @@
 package game;
 
-import behaviors.ColliderBehavior;
-import behaviors.PhysicsBehavior;
-import behaviors.PositionBehavior;
-import behaviors.SpaceOccupierBehavior;
-import behaviors.VelocityBehavior;
+import behaviors.*;
 import engine.Behavior;
 import engine.Input;
 import game.attacktypes.AT_Arrow;
-import game.attacktypes.AT_Firebolt;
+import game.attacktypes.AT_Spell;
 import game.attacktypes.AT_SwordSwing;
+import game.spells.SpellNode;
+import game.spells.SpellNode.SpellEffect.FireDamage;
+import game.spells.SpellNode.SpellTarget;
+import game.spells.targets.ST_Area;
+import game.spells.targets.ST_NearbyCreature;
+import game.spells.targets.ST_Projectile;
+import game.spells.targets.ST_Repeat;
 import graphics.Animation;
 import graphics.Camera;
 import org.joml.Vector2d;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_1;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_2;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_3;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class Player extends Behavior {
 
@@ -47,6 +43,8 @@ public class Player extends Behavior {
 
     @Override
     public void update(double dt) {
+        attacker.creature.health.modify(100);
+
         Vector2d goalVelocity = new Vector2d();
         if (Input.keyDown(GLFW_KEY_W)) {
             goalVelocity.y += 1;
@@ -84,7 +82,26 @@ public class Player extends Behavior {
             attacker.setAttackType(new AT_Arrow());
         }
         if (Input.keyJustPressed(GLFW_KEY_3)) {
-            attacker.setAttackType(new AT_Firebolt());
+            //attacker.setAttackType(new AT_Firebolt());
+            SpellNode spell = new ST_Projectile().onHit(new FireDamage());
+            attacker.setAttackType(new AT_Spell(spell));
+        }
+        if (Input.keyJustPressed(GLFW_KEY_4)) {
+            SpellNode spell = new ST_Projectile().onHit(new ST_Repeat().onHit(new FireDamage()));
+            attacker.setAttackType(new AT_Spell(spell));
+        }
+        if (Input.keyJustPressed(GLFW_KEY_5)) {
+            SpellNode spell = new ST_Projectile().onHit(new ST_Area().onHit(new FireDamage(), new ST_Repeat().onHit(new FireDamage())));
+            attacker.setAttackType(new AT_Spell(spell));
+        }
+        if (Input.keyJustPressed(GLFW_KEY_6)) {
+            SpellTarget hitNearby = new ST_NearbyCreature().onHit(new FireDamage());
+            hitNearby.onHit(hitNearby, hitNearby);
+            attacker.setAttackType(new AT_Spell(new ST_Projectile().onHit(new FireDamage(), hitNearby)));
+        }
+        if (Input.keyJustPressed(GLFW_KEY_7)) {
+            SpellNode spell = new ST_Repeat().onHit(new ST_NearbyCreature().onHit(new FireDamage()));
+            attacker.setAttackType(new AT_Spell(spell));
         }
 
         Camera.camera.position.lerp(position.position, 1 - Math.exp(5 * -dt));
