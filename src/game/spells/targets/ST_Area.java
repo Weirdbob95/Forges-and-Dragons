@@ -10,7 +10,6 @@ import graphics.Graphics;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import org.joml.Vector4d;
 
 public class ST_Area extends SpellTarget {
 
@@ -20,14 +19,21 @@ public class ST_Area extends SpellTarget {
     public void cast(SpellInstance si) {
         List<SpellInstance> targets = new LinkedList();
         for (Creature c : ALL_CREATURES) {
-            if (c.position.position.distance(si.position.get()) < 200) {
-                SpellInstance newSI = new SpellInstance(si);
-                newSI.position = new CreatureSpellPosition(c);
-                targets.add(newSI);
+            if (c.position.position.distance(si.position()) < 200) {
+                targets.add(si.setPosition(new CreatureSpellPosition(c)).setMana(si.mana() / 3));
             }
         }
-        hit(si.mana, targets);
-        createGraphicsEffect(.2, () -> Graphics.drawCircle(si.position.get(), 200, new Vector4d(1, .2, 0, .2)));
+        if (!targets.isEmpty()) {
+            targets.forEach(this::hit);
+        } else {
+            not(si);
+        }
+        createGraphicsEffect(.2, () -> Graphics.drawCircle(si.position(), 200, si.transparentColor()));
+    }
+
+    @Override
+    public double minCost() {
+        return super.minCost() * 3;
     }
 
     @Override

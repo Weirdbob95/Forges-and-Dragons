@@ -62,6 +62,19 @@ public class DungeonGenerator {
             m.position.position = new Vector2d(pos.x + .5, pos.y + .5).mul(64);
             m.create();
         }
+        for (int i = 0; i < 100; i++) {
+            IntPair pos = openPositions.get((int) (Math.random() * openPositions.size()));
+            while (chosen.contains(pos) || pos.distance(new IntPair(0, 0)) < 10) {
+                pos = openPositions.get((int) (Math.random() * openPositions.size()));
+            }
+            //chosen.add(pos);
+            int numCoins = (int) Math.ceil(20 * Math.random());
+            for (int k = 0; k < numCoins; k++) {
+                Coin c = new Coin();
+                c.sprite.position.position = new Vector2d(pos.x + .2 + Math.random() * .6, pos.y + .2 + Math.random() * .6).mul(64);
+                c.create();
+            }
+        }
     }
 
     public IntPair connectRoom(DungeonRoom room, List<IntPair> avoid) {

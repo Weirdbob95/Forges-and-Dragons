@@ -1,7 +1,7 @@
 package game.spells.targets;
 
-import behaviors.ColliderBehavior.Rectangle;
 import behaviors.*;
+import behaviors.ColliderBehavior.Rectangle;
 import engine.Behavior;
 import game.Creature;
 import game.Twinkle;
@@ -10,7 +10,6 @@ import game.spells.SpellNode.SpellTarget;
 import game.spells.SpellPosition.CreatureSpellPosition;
 import graphics.Sprite;
 import org.joml.Vector2d;
-import org.joml.Vector4d;
 import static util.MathUtils.direction;
 
 public class ST_Projectile extends SpellTarget {
@@ -18,8 +17,8 @@ public class ST_Projectile extends SpellTarget {
     @Override
     public void cast(SpellInstance si) {
         ST_ProjectileBehavior spb = new ST_ProjectileBehavior();
-        spb.position.position = si.position.get();
-        spb.velocity.velocity = si.goal.get().sub(si.position.get(), new Vector2d()).normalize().mul(600);
+        spb.position.position = si.position();
+        spb.velocity.velocity = si.goal().sub(si.position(), new Vector2d()).normalize().mul(600);
         spb.projectile = this;
         spb.si = si;
         spb.create();
@@ -54,21 +53,20 @@ public class ST_Projectile extends SpellTarget {
         public void destroyInner() {
             Twinkle at = new Twinkle();
             at.position.position = new Vector2d(position.position);
-            at.animation.sprite.color = new Vector4d(1, .2, 0, 1);
+            at.animation.sprite.color = si.color();
             at.create();
         }
 
         @Override
         public void update(double dt) {
             if (collider.collisionShape.solidCollision()) {
+                projectile.not(si);
                 destroy();
             }
             Creature c = collider.collisionShape.findTouching(Creature.class);
             if (c != null) {
-                if (!(si.position instanceof CreatureSpellPosition && ((CreatureSpellPosition) si.position).creature == c)) {
-                    SpellInstance newSI = new SpellInstance(si);
-                    newSI.position = new CreatureSpellPosition(c);
-                    projectile.hit(si.mana, newSI);
+                if (si.creature() != null && si.creature() != c) {
+                    projectile.hit(si.setPosition(new CreatureSpellPosition(c)));
                     destroy();
                 }
             }

@@ -5,6 +5,7 @@ import game.spells.SpellInstance;
 import game.spells.SpellNode;
 import game.spells.SpellPosition.CreatureSpellPosition;
 import game.spells.SpellPosition.StaticSpellPosition;
+import org.joml.Vector4d;
 
 public class AT_Spell extends AttackType {
 
@@ -19,7 +20,8 @@ public class AT_Spell extends AttackType {
         SpellInstance si = new SpellInstance(
                 new CreatureSpellPosition(attacker.creature),
                 new StaticSpellPosition(attacker.targetPos),
-                60);
+                50,
+                new Vector4d(1, .2, 0, 1));
         sn.cast(si);
     }
 
