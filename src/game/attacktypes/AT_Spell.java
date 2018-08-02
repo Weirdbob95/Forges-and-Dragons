@@ -1,28 +1,41 @@
 package game.attacktypes;
 
 import game.AttackType;
-import game.spells.SpellInstance;
-import game.spells.SpellNode;
-import game.spells.SpellPosition.CreatureSpellPosition;
-import game.spells.SpellPosition.StaticSpellPosition;
-import org.joml.Vector4d;
+import game.spells.SpellInfo;
+import game.spells.TypeDefinitions;
+import game.spells.TypeDefinitions.SpellCastingType;
+import game.spells.TypeDefinitions.SpellEffectType;
+import game.spells.TypeDefinitions.SpellElement;
+import game.spells.TypeDefinitions.SpellShapeInitial;
+import game.spells.TypeDefinitions.SpellShapeModifier;
 
 public class AT_Spell extends AttackType {
 
-    private SpellNode sn;
+    private final SpellCastingType castingType;
+    private final SpellElement element;
+    private final SpellEffectType effectType;
+    private final SpellShapeInitial shapeInitial;
 
-    public AT_Spell(SpellNode sn) {
-        this.sn = sn;
+    public AT_Spell(SpellCastingType castingType, SpellElement element, SpellEffectType effectType, SpellShapeInitial shapeInitial, SpellShapeModifier... shapeModifiers) {
+        this.castingType = castingType;
+        this.shapeInitial = shapeInitial;
+        this.element = element;
+        this.effectType = effectType;
+        if (shapeModifiers.length == 0) {
+            shapeInitial.onHit(new TypeDefinitions.SpellEffectFinal());
+        } else {
+            shapeInitial.onHit(shapeModifiers[0]);
+            for (int i = 0; i < shapeModifiers.length - 1; i++) {
+                shapeModifiers[i].onHit(shapeModifiers[i + 1]);
+            }
+            shapeModifiers[shapeModifiers.length - 1].onHit(new TypeDefinitions.SpellEffectFinal());
+        }
     }
 
     @Override
     public void attack() {
-        SpellInstance si = new SpellInstance(
-                new CreatureSpellPosition(attacker.creature),
-                new StaticSpellPosition(attacker.targetPos),
-                50,
-                new Vector4d(1, .2, 0, 1));
-        sn.cast(si);
+        SpellInfo info = new SpellInfo(attacker.creature, attacker.targetPos, element, effectType);
+        shapeInitial.cast(info, attacker.targetPos);
     }
 
     @Override

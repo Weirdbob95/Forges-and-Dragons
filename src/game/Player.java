@@ -6,16 +6,10 @@ import engine.Input;
 import game.attacktypes.AT_Arrow;
 import game.attacktypes.AT_Spell;
 import game.attacktypes.AT_SwordSwing;
-import game.spells.SpellNode;
-import game.spells.SpellNode.SpellEffect.SE_FireDamage;
-import game.spells.SpellNode.SpellEffect.SE_Teleport;
-import game.spells.SpellNode.SpellTarget;
-import game.spells.targets.ST_Area;
-import game.spells.targets.ST_NearbyCreature;
-import game.spells.targets.ST_Projectile;
-import game.spells.targets.ST_Repeat;
-import game.spells.targets.ST_Revert;
-import game.spells.targets.ST_Targeter;
+import game.spells.ProjectileShape;
+import static game.spells.TypeDefinitions.SpellCastingType.CHARGED;
+import static game.spells.TypeDefinitions.SpellEffectType.DESTRUCTION;
+import static game.spells.TypeDefinitions.SpellElement.FIRE;
 import graphics.Animation;
 import graphics.Camera;
 import org.joml.Vector2d;
@@ -87,40 +81,7 @@ public class Player extends Behavior {
             attacker.setAttackType(new AT_Arrow());
         }
         if (Input.keyJustPressed(GLFW_KEY_3)) {
-            //attacker.setAttackType(new AT_Firebolt());
-            SpellNode spell = new ST_Projectile().onHit(new SE_FireDamage());
-            attacker.setAttackType(new AT_Spell(spell));
-        }
-        if (Input.keyJustPressed(GLFW_KEY_4)) {
-            SpellNode spell = new ST_Projectile().onHit(new ST_Repeat().onHit(new SE_FireDamage()));
-            attacker.setAttackType(new AT_Spell(spell));
-        }
-        if (Input.keyJustPressed(GLFW_KEY_5)) {
-            SpellNode spell = new ST_Projectile().onHit(new ST_Area().onHit(new SE_FireDamage(), new ST_Repeat().onHit(new SE_FireDamage())));
-            attacker.setAttackType(new AT_Spell(spell));
-        }
-        if (Input.keyJustPressed(GLFW_KEY_6)) {
-            SpellTarget hitNearby = new ST_NearbyCreature().onHit(new SE_FireDamage());
-            hitNearby.onHit(hitNearby, hitNearby);
-            attacker.setAttackType(new AT_Spell(new ST_Projectile().onHit(new SE_FireDamage(), hitNearby)));
-        }
-        if (Input.keyJustPressed(GLFW_KEY_7)) {
-            SpellNode spell = new ST_Repeat().onHit(new ST_NearbyCreature().onHit(new SE_FireDamage()));
-            attacker.setAttackType(new AT_Spell(spell));
-        }
-        if (Input.keyJustPressed(GLFW_KEY_8)) {
-            SpellTarget hitNearby = new ST_NearbyCreature().onHit(new SE_FireDamage());
-            hitNearby.onNot(hitNearby);
-            attacker.setAttackType(new AT_Spell(hitNearby));
-        }
-        if (Input.keyJustPressed(GLFW_KEY_9)) {
-            SpellNode spell = new ST_Projectile().onHit(new ST_Area().onHit(new SE_Teleport()));
-            //SpellNode spell = new ST_Projectile().onHit(new ST_Area().onHit(new ST_Revert().onHit(new SE_Teleport())));
-            attacker.setAttackType(new AT_Spell(spell));
-        }
-        if (Input.keyJustPressed(GLFW_KEY_0)) {
-            SpellNode spell = new ST_Projectile().onHit(new ST_Revert().onHit(new SE_Teleport()), new ST_Targeter().onHit(new SE_Teleport()));
-            attacker.setAttackType(new AT_Spell(spell));
+            attacker.setAttackType(new AT_Spell(CHARGED, FIRE, DESTRUCTION, new ProjectileShape()));
         }
 
         Camera.camera.position.lerp(position.position, 1 - Math.exp(5 * -dt));
