@@ -81,8 +81,11 @@ public class AttackerBehavior extends Behavior {
                 if (attackType.payChargeCost(dt)) {
                     attackType.charge = Math.min(attackType.charge + dt, attackType.maxCharge());
                 }
-            } else if (attackType.fireAtMaxCharge()) {
-                attackWhenReady();
+            } else {
+                if (attackType.fireAtMaxCharge()) {
+                    attackWhenReady();
+                }
+                attackType.payChargeCost(dt);
             }
             if (attackWhenReady && attackType.charge >= attackType.minCharge()) {
                 attackType.attack();

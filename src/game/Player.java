@@ -4,12 +4,18 @@ import behaviors.*;
 import engine.Behavior;
 import engine.Input;
 import game.attacktypes.AT_Arrow;
-import game.attacktypes.AT_Spell;
+import game.attacktypes.AT_ChanneledSpell;
+import game.attacktypes.AT_ChargedSpell;
+import game.attacktypes.AT_InstantSpell;
 import game.attacktypes.AT_SwordSwing;
-import game.spells.ProjectileShape;
-import static game.spells.TypeDefinitions.SpellCastingType.CHARGED;
 import static game.spells.TypeDefinitions.SpellEffectType.DESTRUCTION;
 import static game.spells.TypeDefinitions.SpellElement.FIRE;
+import game.spells.shapes.S_Burst;
+import game.spells.shapes.S_Ground;
+import game.spells.shapes.S_Projectile;
+import game.spells.shapes.S_Ray;
+import game.spells.shapes.S_Rune;
+import game.spells.shapes.SpellShapeMissile;
 import graphics.Animation;
 import graphics.Camera;
 import org.joml.Vector2d;
@@ -41,7 +47,7 @@ public class Player extends Behavior {
     @Override
     public void update(double dt) {
         attacker.creature.health.modify(100);
-        attacker.creature.mana.modify(100);
+        attacker.creature.mana.modify(30 * dt);
         attacker.creature.stamina.modify(100);
 
         Vector2d goalVelocity = new Vector2d();
@@ -80,10 +86,60 @@ public class Player extends Behavior {
         if (Input.keyJustPressed(GLFW_KEY_2)) {
             attacker.setAttackType(new AT_Arrow());
         }
+
+        // Fire bolt
         if (Input.keyJustPressed(GLFW_KEY_3)) {
-            attacker.setAttackType(new AT_Spell(CHARGED, FIRE, DESTRUCTION, new ProjectileShape()));
+            attacker.setAttackType(new AT_InstantSpell(FIRE, DESTRUCTION, new S_Projectile()));
         }
 
+        // Scorching ray
+        if (Input.keyJustPressed(GLFW_KEY_4)) {
+            attacker.setAttackType(new AT_InstantSpell(FIRE, DESTRUCTION, new S_Ray()));
+        }
+
+        // Fireball
+        if (Input.keyJustPressed(GLFW_KEY_5)) {
+            attacker.setAttackType(new AT_ChargedSpell(FIRE, DESTRUCTION, new S_Projectile(), new S_Burst()));
+        }
+
+        // Glyph of warding
+        if (Input.keyJustPressed(GLFW_KEY_6)) {
+            attacker.setAttackType(new AT_ChargedSpell(FIRE, DESTRUCTION, new S_Ground(), new S_Rune(), new S_Burst()));
+        }
+
+        // Continuous ray
+        if (Input.keyJustPressed(GLFW_KEY_7)) {
+            SpellShapeMissile s = new S_Ray();
+            s.isHoming = true;
+            attacker.setAttackType(new AT_ChanneledSpell(FIRE, DESTRUCTION, s));
+        }
+
+        // Why would you even
+        if (Input.keyJustPressed(GLFW_KEY_8)) {
+            SpellShapeMissile s = new S_Ray();
+            s.isHoming = true;
+            s.isMultishot = true;
+            attacker.setAttackType(new AT_ChanneledSpell(FIRE, DESTRUCTION, s, new S_Burst(), new S_Burst()));
+        }
+
+//        if (Input.keyJustPressed(GLFW_KEY_6)) {
+//            attacker.setAttackType(new AT_ChanneledSpell(FIRE, DESTRUCTION, new S_Ray()));
+//        }
+//        if (Input.keyJustPressed(GLFW_KEY_7)) {
+//            attacker.setAttackType(new AT_InstantSpell(FIRE, DESTRUCTION, new S_Ray()));
+//        }
+//        if (Input.keyJustPressed(GLFW_KEY_8)) {
+//            S_Projectile p = new S_Projectile();
+//            p.isMultishot = true;
+//            p.isHoming = true;
+//            attacker.setAttackType(new AT_ChanneledSpell(FIRE, DESTRUCTION, p, new S_Burst()));
+//        }
+//        if (Input.keyJustPressed(GLFW_KEY_9)) {
+//            S_Ray p = new S_Ray();
+//            p.isMultishot = true;
+//            p.isHoming = true;
+//            attacker.setAttackType(new AT_ChanneledSpell(FIRE, DESTRUCTION, p));
+//        }
         Camera.camera.position.lerp(position.position, 1 - Math.exp(5 * -dt));
     }
 }

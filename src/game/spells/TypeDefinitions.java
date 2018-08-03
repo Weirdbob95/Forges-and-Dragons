@@ -44,9 +44,9 @@ public abstract class TypeDefinitions {
         @Override
         public void cast(SpellInfo info) {
             if (info.target.targetsCreature) {
-                EffectDefinitions.hitCreature(info.element, info.effectType, info.target.creature);
+                EffectDefinitions.hitCreature(info.element, info.effectType, info.target.creature, info.powerMultiplier);
             } else {
-                EffectDefinitions.hitTerrain(info.element, info.effectType, info.target.terrain);
+                EffectDefinitions.hitTerrain(info.element, info.effectType, info.target.terrain, info.powerMultiplier);
             }
         }
     }

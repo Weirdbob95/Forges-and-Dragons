@@ -3,21 +3,18 @@ package game.attacktypes;
 import game.AttackType;
 import game.spells.SpellInfo;
 import game.spells.TypeDefinitions;
-import game.spells.TypeDefinitions.SpellCastingType;
 import game.spells.TypeDefinitions.SpellEffectType;
 import game.spells.TypeDefinitions.SpellElement;
 import game.spells.TypeDefinitions.SpellShapeInitial;
 import game.spells.TypeDefinitions.SpellShapeModifier;
 
-public class AT_Spell extends AttackType {
+public abstract class SpellAttackType extends AttackType {
 
-    private final SpellCastingType castingType;
     private final SpellElement element;
     private final SpellEffectType effectType;
     private final SpellShapeInitial shapeInitial;
 
-    public AT_Spell(SpellCastingType castingType, SpellElement element, SpellEffectType effectType, SpellShapeInitial shapeInitial, SpellShapeModifier... shapeModifiers) {
-        this.castingType = castingType;
+    public SpellAttackType(SpellElement element, SpellEffectType effectType, SpellShapeInitial shapeInitial, SpellShapeModifier... shapeModifiers) {
         this.shapeInitial = shapeInitial;
         this.element = element;
         this.effectType = effectType;
@@ -32,44 +29,8 @@ public class AT_Spell extends AttackType {
         }
     }
 
-    @Override
-    public void attack() {
-        SpellInfo info = new SpellInfo(attacker.creature, attacker.targetPos, element, effectType);
+    public void cast(double powerMultiplier) {
+        SpellInfo info = new SpellInfo(attacker.creature, attacker.targetPos, powerMultiplier, element, effectType);
         shapeInitial.cast(info, attacker.targetPos);
-    }
-
-    @Override
-    public double cooldown() {
-        return .3;
-    }
-
-    @Override
-    public boolean fireAtMaxCharge() {
-        return true;
-    }
-
-    @Override
-    public boolean payChargeCost(double dt) {
-        return true;
-    }
-
-    @Override
-    public boolean payInitialCost() {
-        return attacker.creature.mana.pay(20);
-    }
-
-    @Override
-    public double maxCharge() {
-        return .5;
-    }
-
-    @Override
-    public double minCharge() {
-        return .5;
-    }
-
-    @Override
-    public double slowdown() {
-        return .25;
     }
 }

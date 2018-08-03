@@ -100,4 +100,10 @@ public class Graphics {
         drawLine(p3, p4, color);
         drawLine(p4, p1, color);
     }
+
+    public static void drawWideLine(Vector2d p1, Vector2d p2, double width, Vector4d color) {
+        Vector2d delta = p2.sub(p1, new Vector2d());
+        Vector2d perp = rotate(delta, Math.PI / 2).normalize().mul(-width / 2);
+        drawRectangle(p1.add(perp, new Vector2d()), direction(delta), new Vector2d(delta.length(), width), color);
+    }
 }
